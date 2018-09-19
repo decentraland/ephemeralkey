@@ -44,6 +44,7 @@
     "@types/secp256k1": "^3.5.0",
     "@types/websocket": "0.0.40",
     "eth-connect": "^0.3.0",
+    "secp256k1": "^3.5.2",
     "typescript": "^2.9.2"
   },
   "devDependencies": {
