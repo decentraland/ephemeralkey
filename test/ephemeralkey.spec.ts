@@ -187,7 +187,7 @@ describe('EphemeralKey', function() {
             'Content-Length': '65000'
           })
         ).to.be.rejectedWith(
-          `Content size exceeded. Max length is ${MAX_CONTENT_SIZE}`
+          `Content size exceeded. Max length is ${MAX_CONTENT_SIZE} bytes`
         )
       })
 

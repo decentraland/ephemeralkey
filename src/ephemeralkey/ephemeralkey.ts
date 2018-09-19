@@ -136,7 +136,9 @@ function generateKeyPair(): Keys {
 
 function validateContentLength(contentSize: string) {
   if (parseInt(contentSize, 10) > MAX_CONTENT_SIZE) {
-    throw new Error(`Content size exceeded. Max length is ${MAX_CONTENT_SIZE}`)
+    throw new Error(
+      `Content size exceeded. Max length is ${MAX_CONTENT_SIZE} bytes`
+    )
   }
 }
 
