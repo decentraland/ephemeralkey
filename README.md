@@ -4,17 +4,19 @@ Lib usage for creating an ephemeral key usage by Decentraland's apps
 
 # Exposed API
 
-- [generateEphemeralKeys](https://github.com/decentraland/ephemeralkey#generateEphemeralKeys)
-- [getHeaders](https://github.com/decentraland/ephemeralkey#getHeaders)
-- [validateHeaders](https://github.com/decentraland/ephemeralkey#validateHeaders)
+- [generateEphemeralKeys](#generate)
+- [getHeaders](#headers)
+- [validateHeaders](#validate)
 
-## generateEphemeralKeys
+## Generate
+
+### generateEphemeralKeys
 
 - Generate a pair of keys (ephemeral public and private keys)
 - Ask to sign a message with your metamask/HW address in order to create a reliable certificate
 - returns `UserData`
 
-### Definition:
+#### Definition:
 
 ```ts
 async function generateEphemeralKeys(
@@ -24,15 +26,15 @@ async function generateEphemeralKeys(
 ): Promise<UserData>
 ```
 
-### Usage
+#### Usage
 
 ```ts
-import { generateEphemeralKeys } from 'ephemeralKey'
+import { ephemeralkey } from 'ephemeralkey'
 
 const decentralandInviteAddress = '0x12345'
 const inviteTokenId = '1'
 
-const userData = generateEphemeralKeys(
+const userData = ephemeralkey.generateEphemeralKeys(
   web3.currentProvider,
   decentralandInviteAddress,
   inviteTokenId
@@ -41,7 +43,7 @@ const userData = generateEphemeralKeys(
 localstorage.setItem('ephemeral-data', JSON.stringify(userData))
 ```
 
-### Response
+#### Response
 
 ```ts
 {
@@ -53,11 +55,13 @@ localstorage.setItem('ephemeral-data', JSON.stringify(userData))
 }
 ```
 
-## getHeaders
+## Headers
 
 - Return the headers to be validated in the server
 
-### Definition:
+### getHeaders
+
+#### Definition:
 
 ```ts
 async function getHeaders(
@@ -66,16 +70,16 @@ async function getHeaders(
 ): Promise<Headers>
 ```
 
-### Usage
+#### Usage
 
 ```ts
-import { getHeaders } from 'ephemeralKey'
+import { ephemeralkey } from 'ephemeralkey'
 
 async function fetchWithEphemeralKey(request: HTTPRequest): Promise<any> {
   const userData = JSON.parse(
     localstorage.getItem('ephemeral-data', JSON.stringify(userData))
   )
-  const headers = getHeaders(userData, request)
+  const headers = ephemeralkey.getHeaders(userData, request)
 
   return fetch(request.url, {
     method: request.method,
@@ -95,7 +99,7 @@ const response = await fetchWithEphemeralKey({
 })
 ```
 
-### Response
+#### Response
 
 ```ts
 {
@@ -107,7 +111,9 @@ const response = await fetchWithEphemeralKey({
 }
 ```
 
-## validateHeaders
+## Validate
+
+### validateHeaders
 
 - Validate headers received on the request
 - Should throw if:
@@ -121,23 +127,23 @@ const response = await fetchWithEphemeralKey({
 
 - Returns true if everything is ok
 
-### Definition:
+#### Definition:
 
 ```ts
 async function validateHeaders(
   provider: any,
   request: HTTPRequest,
-  headers: Headers
+  headers: ServerHeaders
 ): Promise<boolean | Error>
 ```
 
-### Usage
+#### Usage
 
 ```ts
-import { validateHeaders } from 'ephemeralKey'
+import { ephemeralkey } from 'ephemeralkey'
 
 app.post('/land', function(req, res) {
-  validateHeaders(
+  ephemeralkey.validateHeaders(
     {
       method: 'POST', // get it from req object
       url: 'market.decentraland.org/api/v1/land', // get it from req object
@@ -149,7 +155,7 @@ app.post('/land', function(req, res) {
 })
 ```
 
-### Response
+#### Response
 
 ```ts
 true
