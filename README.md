@@ -167,6 +167,7 @@ or
 Error('Invalid signature')
 Error('Invalid certificate')
 Error('Invalid timestamp')
+Error('Content size exceeded. Max length is 64000 bytes')
 ```
 
 # Tests
