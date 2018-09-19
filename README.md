@@ -1,6 +1,6 @@
 # Decentraland - Ephemeralkey
 
-Lib usage for creating an ephemeral key usage by Decentraland's apps
+Lib usage for creating an ephemeral key to be used by Decentraland's apps
 
 # Exposed API
 
