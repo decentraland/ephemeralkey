@@ -1,3 +1,1 @@
-import ephemeralkey from './ephemeralkey'
-
-export default ephemeralkey
+export { ephemeralkey } from './ephemeralkey'
