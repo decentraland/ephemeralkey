@@ -2,18 +2,31 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/node:8.9.4
+      - image: circleci/node:8
+      - image: ethereum/client-go
+        command: |
+          --identity="TEST_NODE"
+          --networkid="53611"
+          --rpc
+          --rpcaddr 0.0.0.0
+          --rpcapi admin,debug,eth,miner,net,personal,shh,txpool,web3
+          --ws
+          --wsaddr 0.0.0.0
+          --wsapi admin,debug,eth,miner,net,personal,shh,txpool,web3
+          --wsorigins "*"
+          --mine
+          --minerthreads=1
+          --dev
 
     working_directory: /tmp/ephemeralkey
 
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 17.05.0-ce
       - restore_cache:
           keys:
             - dependencies-{{ checksum "package-lock.json" }}
-      - run:
-          name: Install system dependencies
-          command: sudo apt-get update && sudo apt install -y libusb-1.0-0 libusb-1.0-0-dev
       - run:
           name: Install node dependencies
           command: npm install
@@ -27,7 +40,7 @@ jobs:
 
   build:
     docker:
-      - image: circleci/node:8.9.4
+      - image: circleci/node:8
 
     working_directory: /tmp/ephemeralkey
 
@@ -36,9 +49,6 @@ jobs:
       - restore_cache:
           keys:
             - dependencies-{{ checksum "package-lock.json" }}
-      - run:
-          name: Install system dependencies
-          command: sudo apt-get update && sudo apt install -y libusb-1.0-0 libusb-1.0-0-dev
       - run:
           name: Install node dependencies
           command: npm install
