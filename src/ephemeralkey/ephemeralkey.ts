@@ -13,8 +13,8 @@ import {
   ServerHeaders
 } from './types'
 
-const oneMinute = 1000 * 60
-export const MAX_CONTENT_SIZE = 64000 // 64kb
+const ONE_MINUTE = 1000 * 60
+export const MAX_CONTENT_SIZE = 1024 * 64 // 64kb
 
 export async function generateEphemeralKeys(
   provider: any, // @nacho TODO: should type a provider
@@ -108,10 +108,7 @@ Date: ${new Date().toString()}
 Expires: ${new Date().toString()} ` // TODO: update Expire
 }
 
-async function getIdentity(
-  address: string,
-  ephemeralPublicKey: string
-): Promise<string> {
+function getIdentity(address: string, ephemeralPublicKey: string): string {
   return `decentraland:${address}/temp/${ephemeralPublicKey}`
 }
 
@@ -124,10 +121,12 @@ function digest(str: string) {
 
 function generateKeyPair(): Keys {
   let privateKey: any
+  let retries = 0
   // Generate a private key until valid
   do {
     privateKey = crypto.randomBytes(32)
-  } while (!secp256k1.privateKeyVerify(privateKey))
+    retries++
+  } while (!secp256k1.privateKeyVerify(privateKey) || retries < 10)
   return {
     ephemeralPublicKey: secp256k1.publicKeyCreate(privateKey).toString('hex'),
     ephemeralPrivateKey: privateKey.toString('hex')
@@ -143,8 +142,8 @@ function validateContentLength(contentSize: string) {
 }
 
 function validateTimestamp(timestamp: number): void | Error {
-  const timePassed = Date.now() - timestamp
-  if (timePassed > oneMinute) {
+  const elapsedTime = Date.now() - timestamp
+  if (elapsedTime > ONE_MINUTE) {
     // valid for one minute
     throw new Error('Invalid timestamp')
   }

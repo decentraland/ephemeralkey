@@ -38,14 +38,6 @@ const request: HTTPRequest = {
   url,
   timestamp
 }
-// const fakeEphemeralPrivateKey =
-//   '1ba8bf88707bb452caf3168af9de7c3f8f704bc3a0a5bc4912a81fd7b41846dd'
-// const fakeEphemeralPublicKey =
-//   '035a94f290f48a527601fd08c2c7fc8d08c060484c3d924b8a1d13b92451327e58'
-// const certificate =
-//   '0x446563656e7472616c616e64204163636573732041757468…17267656e74696e61205374616e646172642054696d652920'
-// const certificateSignature =
-//   '0x8d98b904cb726fa110c6fd1c61a3c699255bf1c59244c9d7…1d2f263057f2f17e06d5263f55b46bcd33e9ee16c5187c61b'
 
 describe('EphemeralKey', function() {
   this.timeout(999999)
@@ -53,8 +45,6 @@ describe('EphemeralKey', function() {
     WebSocketConstructor: w3cwebsocket
   })
   const requestManager = new RequestManager(provider)
-
-  // after(() => provider.dispose())
 
   describe('generateEphemeralKeys', function() {
     it('should generate ephemeralKeys', async function() {
@@ -184,7 +174,7 @@ describe('EphemeralKey', function() {
         await expect(
           validateHeaders(provider, request, {
             ...headers,
-            'Content-Length': '65000'
+            'Content-Length': '66000'
           })
         ).to.be.rejectedWith(
           `Content size exceeded. Max length is ${MAX_CONTENT_SIZE} bytes`
@@ -255,7 +245,7 @@ describe('EphemeralKey', function() {
           'Content-Length': '64000'
         }
 
-        await wait(oneMinute * 2)
+        await wait(oneMinute * 1.5)
 
         await expect(
           validateHeaders(provider, request, serverHeaders),
