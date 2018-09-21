@@ -31,7 +31,7 @@ export type UserData = Keys & {
 export type HTTPRequest = {
   method: 'GET' | 'POST'
   url: string
-  body: string
+  body: Buffer
   timestamp?: number
 }
 

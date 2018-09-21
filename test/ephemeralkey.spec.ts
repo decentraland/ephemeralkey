@@ -34,7 +34,10 @@ const oneMinute = 1000 * 60
 
 const request: HTTPRequest = {
   method: 'POST',
-  body: JSON.stringify({ param1: 'data1', param2: 'data2' }),
+  body: Buffer.from(
+    JSON.stringify({ param1: 'data1', param2: 'data2' }),
+    'utf8'
+  ),
   url,
   timestamp
 }
@@ -124,6 +127,12 @@ describe('EphemeralKey', function() {
       })
 
       it('should get different signature for each request', async function() {
+        userData = await generateEphemeralKeys(
+          provider,
+          inviteAddress,
+          inviteTokenId
+        )
+
         const headers: Headers = await getHeaders(userData, request)
         const anotherHeaders: Headers = await getHeaders(userData, {
           ...request,
@@ -131,7 +140,7 @@ describe('EphemeralKey', function() {
         })
         const justAnotherHeaders: Headers = await getHeaders(userData, {
           ...request,
-          body: '{}'
+          body: new Buffer('{}')
         })
         const hackedRequest: Headers = await getHeaders(userData, {
           ...request,
@@ -205,7 +214,11 @@ describe('EphemeralKey', function() {
         ).to.be.rejectedWith('Invalid signature')
 
         await expect(
-          validateHeaders(provider, { ...request, body: '{}' }, serverHeaders),
+          validateHeaders(
+            provider,
+            { ...request, body: new Buffer('{}') },
+            serverHeaders
+          ),
           'expect invalid signature exception:: body was changed'
         ).to.be.rejectedWith('Invalid signature')
       })

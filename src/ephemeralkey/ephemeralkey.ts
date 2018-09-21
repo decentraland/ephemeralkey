@@ -112,10 +112,10 @@ function getIdentity(address: string, ephemeralPublicKey: string): string {
   return `decentraland:${address}/temp/${ephemeralPublicKey}`
 }
 
-function digest(str: string) {
+function digest(message: Buffer) {
   return crypto
     .createHash('sha256')
-    .update(str)
+    .update(message)
     .digest()
 }
 
@@ -182,7 +182,13 @@ async function validateCertificate(
 
 export function getMethodMessage(param: HTTPRequest): Buffer {
   const { method, url, timestamp, body } = param
-  return digest(`${method}||${url}||${timestamp}||${body}`)
+  const message = Buffer.concat([
+    Buffer.from(method),
+    Buffer.from(url),
+    Buffer.from((timestamp as number).toString()),
+    body
+  ])
+  return digest(message)
 }
 
 export function decodeIdentity(identity: string): Identity {
