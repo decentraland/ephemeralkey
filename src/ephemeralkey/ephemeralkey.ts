@@ -43,10 +43,7 @@ export async function generateEphemeralKeys(
   return { address: accounts[0], signature, message, ...keys }
 }
 
-export async function getHeaders(
-  userData: UserData,
-  request: HTTPRequest
-): Promise<Headers> {
+export function getHeaders(userData: UserData, request: HTTPRequest): Headers {
   const {
     address,
     ephemeralPrivateKey,
@@ -61,14 +58,14 @@ export async function getHeaders(
     Buffer.from(ephemeralPrivateKey, 'hex')
   )
 
-  const xIdentity = await getIdentity(address, ephemeralPublicKey)
+  const xIdentity = getIdentity(address, ephemeralPublicKey)
 
   return {
-    'X-Identity': xIdentity,
-    'X-Signature': signed.signature.toString('hex'),
-    'X-Certificate': message,
-    'X-Certificate-Signature': signature,
-    'X-Timestamp': (request.timestamp as number).toString()
+    'x-identity': xIdentity,
+    'x-signature': signed.signature.toString('hex'),
+    'x-certificate': message,
+    'x-certificate-signature': signature,
+    'x-timestamp': (request.timestamp as number).toString()
   }
 }
 
@@ -78,24 +75,23 @@ export async function validateHeaders(
   headers: ServerHeaders
 ): Promise<boolean | Error> {
   const { publicKey, ephemeralPublicKey } = decodeIdentity(
-    headers['X-Identity']
+    headers['x-identity']
   )
-  const timestamp = parseInt(headers['X-Timestamp'], 10)
+  const timestamp = parseInt(headers['x-timestamp'], 10)
 
-  validateContentLength(headers['Content-Length'])
+  validateContentLength(headers['content-length'])
   validateTimestamp(timestamp)
   validateSignature(
     { ...request, timestamp },
-    headers['X-Signature'],
+    headers['x-signature'],
     ephemeralPublicKey
   )
   await validateCertificate(
     provider,
     publicKey,
-    headers['X-Certificate'],
-    headers['X-Certificate-Signature']
+    headers['x-certificate'],
+    headers['x-certificate-signature']
   )
-
   return true
 }
 
@@ -158,6 +154,7 @@ function validateSignature(
   ephemeralPublicKey: string
 ): void | Error {
   const methodMessage = getMethodMessage(request)
+
   if (
     !secp256k1.verify(
       methodMessage,
@@ -180,6 +177,7 @@ async function validateCertificate(
     certificate,
     signature
   )
+
   if (publicKey !== recoveredAddress) throw new Error('Invalid certificate')
 }
 
@@ -191,6 +189,7 @@ export function getMethodMessage(param: HTTPRequest): Buffer {
     Buffer.from((timestamp as number).toString()),
     body
   ])
+
   return digest(message)
 }
 

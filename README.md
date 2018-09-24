@@ -64,10 +64,7 @@ localstorage.setItem('ephemeral-data', JSON.stringify(userData))
 #### Definition:
 
 ```ts
-async function getHeaders(
-  userData: UserData,
-  request: HTTPRequest
-): Promise<Headers>
+function getHeaders(userData: UserData, request: HTTPRequest): Headers
 ```
 
 #### Usage
@@ -103,11 +100,11 @@ const response = await fetchWithEphemeralKey({
 
 ```ts
 {
-  'X-Identity': string
-  'X-Signature': string
-  'X-Certificate': string
-  'X-Certificate-Signature': string
-  'X-Timestamp': number
+  'x-identity': string
+  'x-signature': string
+  'x-certificate': string
+  'x-certificate-signature': string
+  'x-timestamp': number
 }
 ```
 
@@ -123,7 +120,7 @@ const response = await fetchWithEphemeralKey({
 * - The timestamp is off by more than 1 minute relative to the system clock
 * - The signature doesn’t match the Ephemeral Address
 * - The content-length is more than 65,536 bytes (64kb) (This is to avoid DDoS by sending a body that is too large)
-* - The Certificate Signature does not correspond to the web3 address in the X-Identity header
+* - The Certificate Signature does not correspond to the web3 address in the x-identity header
 
 - Returns true if everything is ok
 
