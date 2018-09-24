@@ -14,8 +14,7 @@ import {
   getHeaders,
   decodeIdentity,
   getMethodMessage,
-  validateHeaders,
-  MAX_CONTENT_SIZE
+  validateHeaders
 } from '../src/ephemeralkey/ephemeralkey'
 
 import {
@@ -178,18 +177,6 @@ describe('EphemeralKey', function() {
         expect(isValid).to.be.equal(true)
       })
 
-      it('should throw invalid content length', async function() {
-        const headers: Headers = await getHeaders(userData, request)
-        await expect(
-          validateHeaders(provider, request, {
-            ...headers,
-            'content-length': '66000'
-          })
-        ).to.be.rejectedWith(
-          `Content size exceeded. Max length is ${MAX_CONTENT_SIZE} bytes`
-        )
-      })
-
       it('should throw invalid signature', async function() {
         const headers: Headers = await getHeaders(userData, request)
         const serverHeaders: ServerHeaders = {
@@ -250,7 +237,7 @@ describe('EphemeralKey', function() {
         ).to.be.rejectedWith('Invalid certificate')
       })
 
-      it.skip('should throw invalid timeout', async function() {
+      it('should throw invalid timeout', async function() {
         this.timeout(9999999)
         const headers: Headers = await getHeaders(userData, request)
         const serverHeaders: ServerHeaders = {

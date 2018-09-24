@@ -4,7 +4,6 @@ export function headerValidator(provider) {
   return (req, _, next) => {
     let body = new Buffer('')
     req.on('data', function(chunk) {
-      console.log(chunk) // @nacho: TODO remove this (testing purpose)
       body = Buffer.concat([body, chunk])
     })
 

@@ -1,4 +1,7 @@
+import * as ReadableStreamClone from 'readable-stream-clone'
+
 import { getHeaders } from '../ephemeralkey/ephemeralkey'
+import { streamToBuffer, isStream } from '../helpers/dataHelper'
 import { UserData, HTTPRequest } from '../ephemeralkey/types'
 
 export function wrapAxios(userData: UserData) {
@@ -6,10 +9,17 @@ export function wrapAxios(userData: UserData) {
     axios.interceptors.request.use(
       async config => {
         const timestamp = Date.now()
-        const buffer: any =
-          typeof config.data !== 'string'
-            ? await streamToBuffer(config.data)
-            : config.data
+        let body = config.data
+
+        const shouldSendStream = isStream(config.data)
+
+        if (shouldSendStream) {
+          body = new ReadableStreamClone(config.data)
+        }
+
+        const buffer: any = shouldSendStream
+          ? await streamToBuffer(config.data)
+          : config.data
 
         const request: HTTPRequest = {
           method: config.method.toUpperCase(),
@@ -22,10 +32,13 @@ export function wrapAxios(userData: UserData) {
 
         return {
           ...config,
-          data: buffer,
+          data: body,
           headers: {
             ...config.headers,
-            common: { ...config.headers['common'], ...headers }
+            common: {
+              ...config.headers['common'],
+              ...headers
+            }
           }
         }
       },
@@ -33,13 +46,4 @@ export function wrapAxios(userData: UserData) {
         return Promise.reject(error)
       }
     )
-}
-
-async function streamToBuffer(stream) {
-  return new Promise((resolve, reject) => {
-    let buffers: any[] = []
-    stream.on('error', reject)
-    stream.on('data', data => buffers.push(data))
-    stream.on('end', () => resolve(Buffer.concat(buffers)))
-  })
 }

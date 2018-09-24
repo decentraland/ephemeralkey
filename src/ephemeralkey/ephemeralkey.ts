@@ -14,7 +14,7 @@ import {
 } from './types'
 
 const ONE_MINUTE = 1000 * 60
-export const MAX_CONTENT_SIZE = 1024 * 64 // 64kb
+export const MAX_CONTENT_SIZE = 10485760 // 10mb
 
 export async function generateEphemeralKeys(
   provider: any, // @nacho TODO: should type a provider
