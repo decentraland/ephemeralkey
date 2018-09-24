@@ -101,11 +101,14 @@ export async function validateHeaders(
 
 function getMessage(params: Message) {
   const { ephemeralPublicKey, network, tokenAddress, nftId } = params
+  const now = new Date()
+  const date = now.toISOString()
+  now.setMonth(now.getMonth() + 1) // expires in one month
   return `Decentraland Access Auth
 Key: ${ephemeralPublicKey}.
 Token: ${network}://${tokenAddress}/${nftId}
-Date: ${new Date().toString()}
-Expires: ${new Date().toString()} ` // TODO: update Expire
+Date: ${date}
+Expires: ${now.toISOString()}`
 }
 
 function getIdentity(address: string, ephemeralPublicKey: string): string {
