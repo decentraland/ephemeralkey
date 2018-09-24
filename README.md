@@ -2,11 +2,20 @@
 
 Lib usage for creating an ephemeral key to be used by Decentraland's apps
 
-# Exposed API
+# Table of content
 
-- [generateEphemeralKeys](#generate)
-- [getHeaders](#headers)
-- [validateHeaders](#validate)
+- [Exposed API](#api)
+  - [generateEphemeralKeys](#generate)
+  - [getHeaders](#headers)
+  - [validateHeaders](#validate)
+- [Utils](#utils)
+  - [Middlewares](#middlewares)
+  - [Wrappers](#wrappers)
+    - [Axios](#axios)
+    - [Fetch](#fetch)
+- [Tests](#tests)
+
+# API
 
 ## Generate
 
@@ -166,6 +175,51 @@ Error('Invalid certificate')
 Error('Invalid timestamp')
 Error('Content size exceeded. Max length is 64000 bytes')
 ```
+
+# Utils
+
+## Middlewares
+
+Set of middlewares
+
+### Nodejs
+
+The `headerValidator` middleware validates the request based using method `validateHeaders` from the API
+
+#### Usage
+
+```ts
+const e = require('express')
+const { w3cwebsocket } = require('websocket')
+const { providers } = require('eth-connect')
+
+const { ephemeralkey } = require('../../dist/ephemeralkey')
+const { headerValidator } = require('../../dist/middlewares')
+
+const app = e()
+
+const provider = new providers.WebSocketProvider('ws://127.0.0.1:8546', {
+  WebSocketConstructor: w3cwebsocket
+})
+
+app.use(headerValidator(provider))
+
+app.post('/', async (_, res) => {
+  res.status(200).send()
+})
+
+app.listen(3000, () => console.log('ready....'))
+```
+
+## Wrappers
+
+### Axios
+
+#### Usage
+
+### Fetch
+
+#### Usage
 
 # Tests
 
