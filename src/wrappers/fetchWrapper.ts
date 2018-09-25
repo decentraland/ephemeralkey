@@ -1,9 +1,6 @@
 import * as ReadableStreamClone from 'readable-stream-clone'
 import * as fetchPonyfill from 'fetch-ponyfill'
 const { Request } = fetchPonyfill()
-// import fetch from 'node-fetch'
-
-// import * as FormData from 'form-data'
 
 import { getHeaders } from '../ephemeralkey/ephemeralkey'
 import { streamToBuffer, isStream } from '../helpers/dataHelper'

@@ -193,7 +193,7 @@ const e = require('express')
 const { w3cwebsocket } = require('websocket')
 const { providers } = require('eth-connect')
 
-const { ephemeralkey } = require('../../dist/ephemeralkey')
+const { ephemeralkey } = require('ephemeralkey')
 const { headerValidator } = require('../../dist/middlewares')
 
 const app = e()
@@ -224,9 +224,47 @@ app.listen(3000, () => console.log('ready....'))
 
 #### Usage
 
+```ts
+import axios from 'axios'
+
+import { ephemeralkey } from 'ephemeralkey'
+import { wrapAxios } from '../../dist/wrappers'
+
+const axiosInstance = axios.create()
+const userData = await ephemeralkey.generateEphemeralKeys(
+  provider,
+  'tokenAddress',
+  'tokenId'
+)
+
+wrapAxios(userData)(axiosInstance)
+
+const res = await axiosInstance('http://localhost:3001/', {
+  method: 'GET',
+  data: ''
+})
+```
+
 ### Fetch
 
 #### Usage
+
+```ts
+import { ephemeralkey } from 'ephemeralkey'
+import { wrapFetch } from '../../dist/wrappers'
+
+const userData = await ephemeralkey.generateEphemeralKeys(
+  provider,
+  'tokenAddress',
+  'tokenId'
+)
+
+const wrappedFetch = wrapFetch(userData)(window.fetch)
+
+const res = await wrappedFetch('http://localhost:3001/', {
+  method: 'GET'
+})
+```
 
 # Tests
 
@@ -234,6 +272,20 @@ On one terminal run:
 
 `./start-local-node.sh` It starts a geth node using Docker
 
+## Node Tests
+
 On a second terminal run:
 
 `npm run test`
+
+## Browser Tests
+
+On a second terminal run:
+
+`npm run test:browser`
+
+If you want to test end2end with a server running in another tab, uncomment
+
+`// app.listen(3001, () => console.log('ready..')) // uncomment if you want to test with the server in other tab`
+
+at `test/helpers/server.ts` and run `./node_modules/.bin/ts-node test/server/server.ts`
