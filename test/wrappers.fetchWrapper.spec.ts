@@ -1,8 +1,7 @@
 import * as chai from 'chai'
 import fetch from 'node-fetch'
 import * as fs from 'fs'
-// import * as FormData from 'form-data'
-// import FormData from 'formdata-node'
+import FormData from 'formdata-node'
 
 const expect = chai.expect
 
@@ -68,7 +67,24 @@ function doTest(provider: any) {
       method: 'POST',
       body: stream
     })
-    fs.unlinkSync('fetch.txt')
+
     expect(res.status).to.be.equal(200)
+  })
+
+  it('should post multipart', async function() {
+    const formdata = new FormData()
+    formdata.append('name', 'Decentraland')
+    formdata.append('domain', 'org')
+    formdata.append('the_file', fs.createReadStream('fetch.txt'))
+
+    const res = await wrappedFetch(`${url}multipart`, {
+      method: 'POST',
+      body: formdata
+    })
+    expect(res.status).to.be.equal(200)
+  })
+
+  after(function() {
+    fs.unlinkSync('fetch.txt')
   })
 }

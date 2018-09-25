@@ -1,6 +1,7 @@
 import * as chai from 'chai'
 import axios from 'axios'
 import * as fs from 'fs'
+import FormData from 'formdata-node'
 
 const expect = chai.expect
 
@@ -27,7 +28,6 @@ function doTest(provider: any) {
   const file = fs.createWriteStream('axios.txt')
 
   for (let i = 0; i <= 1000; i++) {
-    // ~ 11mb file
     file.write(
       'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n'
     )
@@ -48,7 +48,7 @@ function doTest(provider: any) {
   })
 
   it('should get', async function() {
-    const res = await axios(url, { ...request, method: 'GET' })
+    const res = await axios(url, { method: 'GET' })
     expect(res.status).to.be.equal(200)
   })
 
@@ -65,7 +65,25 @@ function doTest(provider: any) {
       data: stream,
       url
     })
-    fs.unlinkSync('axios.txt')
+
     expect(res.status).to.be.equal(200)
+  })
+
+  it('should post multipart', async function() {
+    const formdata = new FormData()
+    formdata.append('name', 'Decentraland')
+    formdata.append('domain', 'org')
+    formdata.append('the_file', fs.createReadStream('axios.txt'))
+
+    const res = await axios(`${url}multipart`, {
+      method: 'POST',
+      data: formdata
+    })
+
+    expect(res.status).to.be.equal(200)
+  })
+
+  after(function() {
+    fs.unlinkSync('axios.txt')
   })
 }

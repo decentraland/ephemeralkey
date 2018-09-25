@@ -1,7 +1,7 @@
 import { validateHeaders } from '../ephemeralkey/ephemeralkey'
 
 export function headerValidator(provider) {
-  return (req, _, next) => {
+  return async (req, _, next) => {
     let body = new Buffer('')
     req.on('data', function(chunk) {
       body = Buffer.concat([body, chunk])
@@ -19,7 +19,10 @@ export function headerValidator(provider) {
           },
           req.headers
         )
-        if (isValidRequest) next()
+        if (isValidRequest) {
+          req.rawBody = body
+          next()
+        }
       } catch (error) {
         next(error)
       }

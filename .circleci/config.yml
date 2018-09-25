@@ -35,6 +35,9 @@ jobs:
             - node_modules
           key: dependencies-{{ checksum "package-lock.json" }}
       - run:
+          name: build for end2end
+          command: npm run build
+      - run:
           name: Run tests
           command: npm run test
 

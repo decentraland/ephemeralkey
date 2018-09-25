@@ -11,15 +11,22 @@ export function wrapAxios(userData: UserData) {
         const timestamp = Date.now()
         let body = config.data
 
-        const shouldSendStream = isStream(config.data)
+        const isFormData =
+          config.data && config.data.toString() === '[object FormData]'
+
+        const shouldSendStream = isStream(
+          isFormData ? config.data.stream : config.data
+        )
 
         if (shouldSendStream) {
-          body = new ReadableStreamClone(config.data)
+          body = new ReadableStreamClone(
+            isFormData ? config.data.stream : config.data
+          )
         }
 
         const buffer: any = shouldSendStream
-          ? await streamToBuffer(config.data)
-          : config.data
+          ? await streamToBuffer(isFormData ? config.data.stream : config.data)
+          : config.data || ''
 
         const request: HTTPRequest = {
           method: config.method.toUpperCase(),
@@ -29,14 +36,22 @@ export function wrapAxios(userData: UserData) {
         }
 
         const headers = getHeaders(userData, request)
-
+        if (
+          typeof window !== 'undefined' &&
+          config.data.toString() === '[object FormData]'
+        ) {
+          body = buffer
+        }
         return {
           ...config,
           data: body,
           headers: {
             ...config.headers,
-            common: {
-              ...config.headers['common'],
+            [config.method]: {
+              ...config.headers[config.method],
+              'Content-Type': isFormData
+                ? `multipart/form-data; boundary=${config.data.boundary}`
+                : config.headers[config.method]['Content-Type'] || '',
               ...headers
             }
           }

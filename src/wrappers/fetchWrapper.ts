@@ -1,6 +1,9 @@
 import * as ReadableStreamClone from 'readable-stream-clone'
 import * as fetchPonyfill from 'fetch-ponyfill'
 const { Request } = fetchPonyfill()
+// import fetch from 'node-fetch'
+
+// import * as FormData from 'form-data'
 
 import { getHeaders } from '../ephemeralkey/ephemeralkey'
 import { streamToBuffer, isStream } from '../helpers/dataHelper'
@@ -16,25 +19,33 @@ export function wrapFetch(userData: UserData) {
 async function signRequest(userData: UserData, args): Promise<any[]> {
   const timestamp = Date.now()
   const [url, opt] = args
+  let request: HTTPRequest
   let body = opt.body
-  const shouldSendStream = isStream(opt.body)
-  if (shouldSendStream) {
-    body = new ReadableStreamClone(opt.body)
-  }
-  const req = new Request(url, opt) // simulate Fetch Request
 
-  const request: HTTPRequest = {
-    method: req.method,
+  const isFormData = opt.body && opt.body.toString() === '[object FormData]'
+  const shouldSendStream = isStream(isFormData ? opt.body.stream : opt.body)
+  if (shouldSendStream) {
+    body = new ReadableStreamClone(isFormData ? opt.body.stream : opt.body)
+  }
+
+  request = {
+    method: opt.method,
     body: Buffer.from(
       shouldSendStream
-        ? ((await streamToBuffer(opt.body)) as Buffer)
+        ? ((await streamToBuffer(
+            isFormData ? opt.body.stream : opt.body
+          )) as Buffer)
         : opt.body || ''
     ),
     url,
     timestamp
   }
-  const headers = getHeaders(userData, request)
 
+  if (typeof window !== 'undefined' && isFormData) {
+    body = request.body
+  }
+
+  const headers = getHeaders(userData, request)
   return [
     url,
     {
@@ -42,7 +53,9 @@ async function signRequest(userData: UserData, args): Promise<any[]> {
       body,
       headers: {
         ...opt.headers,
-        // 'content-type': req.headers.get('content-type'),
+        'Content-Type': isFormData
+          ? `multipart/form-data; boundary=${opt.body.boundary}`
+          : new Request(url, opt).headers.get('content-type'),
         ...headers
       }
     }
