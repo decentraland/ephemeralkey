@@ -1,60 +1,41 @@
-import * as ReadableStreamClone from 'readable-stream-clone'
-import * as fetchPonyfill from 'fetch-ponyfill'
-const { Request } = fetchPonyfill()
-
 import { getHeaders } from '../ephemeralkey/ephemeralkey'
-import { streamToBuffer, isStream } from '../helpers/dataHelper'
-import { UserData, HTTPRequest } from '../ephemeralkey/types'
+import { UserData } from '../ephemeralkey/types'
+import { FetchRequest } from './types'
+import { getRequestData } from './commons'
 
 export function wrapFetch(userData: UserData) {
-  return fetch => async (...args): Promise<Response> => {
-    const req = await signRequest(userData, args)
+  return fetch => async (url: string, opt: any[]): Promise<Response> => {
+    const req = await signRequest(userData, url, opt)
     return fetch(...req)
   }
 }
 
-async function signRequest(userData: UserData, args): Promise<any[]> {
-  const timestamp = Date.now()
-  const [url, opt] = args
-  let request: HTTPRequest
-  let body = opt.body
-
-  const isFormData = opt.body && opt.body.toString() === '[object FormData]'
-  const shouldSendStream = isStream(isFormData ? opt.body.stream : opt.body)
-  if (shouldSendStream) {
-    body = new ReadableStreamClone(isFormData ? opt.body.stream : opt.body)
-  }
-
-  request = {
-    method: opt.method,
-    body: Buffer.from(
-      shouldSendStream
-        ? ((await streamToBuffer(
-            isFormData ? opt.body.stream : opt.body
-          )) as Buffer)
-        : opt.body || ''
-    ),
+async function signRequest(
+  userData: UserData,
+  url: string,
+  opt: any
+): Promise<FetchRequest> {
+  const { body, httpRequest, isFormData } = await getRequestData(
     url,
-    timestamp
-  }
+    opt.method,
+    opt.body
+  )
+  const headers = getHeaders(userData, httpRequest)
 
-  if (typeof window !== 'undefined' && isFormData) {
-    body = request.body
-  }
-
-  const headers = getHeaders(userData, request)
-  return [
-    url,
-    {
-      ...opt,
-      body,
-      headers: {
-        ...opt.headers,
-        'Content-Type': isFormData
-          ? `multipart/form-data; boundary=${opt.body.boundary}`
-          : new Request(url, opt).headers.get('content-type'),
-        ...headers
-      }
+  const options = {
+    ...opt,
+    body,
+    headers: {
+      ...opt.headers,
+      ...headers
     }
-  ]
+  }
+
+  if (isFormData) {
+    options.headers['Content-Type'] = `multipart/form-data; boundary=${
+      opt.body.boundary
+    }`
+  }
+
+  return [url, options]
 }
