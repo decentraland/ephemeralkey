@@ -283,9 +283,3 @@ On a second terminal run:
 On a second terminal run:
 
 `npm run test:browser`
-
-If you want to test end2end with a server running in another tab, uncomment
-
-`// app.listen(3001, () => console.log('ready..')) // uncomment if you want to test with the server in other tab`
-
-at `test/helpers/server.ts` and run `./node_modules/.bin/ts-node test/server/server.ts`

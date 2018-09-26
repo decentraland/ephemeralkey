@@ -14,73 +14,31 @@
 type Part = {
   header: string
   info: string
-  part: Buffer
+  part: number[]
 }
 
-export function parse(multipartBodyBuffer, boundary) {
-  const process = function(part: Part) {
-    // will transform this object:
-    // { header: 'Content-Disposition: form-data; name="uploads[]"; filename="A.txt"',
-    // info: 'Content-Type: text/plain',
-    // part: 'AAAABBBB' }
-    // into this one:
-    // { filename: 'A.txt', type: 'text/plain', data: <Buffer 41 41 41 41 42 42 42 42> }
-    const obj = function(str) {
-      const k = str.split('=')
-      const a = k[0].trim()
+type Input = {
+  filename?: string
+  name?: string
+  type: string
+  data: Buffer
+}
 
-      const b = JSON.parse(k[1].trim())
-      const o = {}
-      Object.defineProperty(o, a, {
-        value: b,
-        writable: true,
-        enumerable: true,
-        configurable: true
-      })
-      return o
-    }
-    const header = part.header.split(';')
-
-    const filenameData = header[2]
-    let input = {}
-    if (filenameData) {
-      input = obj(filenameData)
-      const contentType = part.info.split(':')[1].trim()
-      Object.defineProperty(input, 'type', {
-        value: contentType,
-        writable: true,
-        enumerable: true,
-        configurable: true
-      })
-    } else {
-      Object.defineProperty(input, 'name', {
-        value: header[1].split('=')[1].replace(/"/g, ''),
-        writable: true,
-        enumerable: true,
-        configurable: true
-      })
-    }
-
-    Object.defineProperty(input, 'data', {
-      value: new Buffer(part.part),
-      writable: true,
-      enumerable: true,
-      configurable: true
-    })
-    return input
-  }
+export function parse(multipartBodyBuffer: Buffer, boundary: string): Input[] {
   let lastline = ''
   let header = ''
   let info = ''
   let state = 0
-  let buffer: any = []
-  const allParts: any = []
+  let buffer: number[] = []
+  const allParts: Input[] = []
 
   for (let i = 0; i < multipartBodyBuffer.length; i++) {
-    const oneByte = multipartBodyBuffer[i]
-    const prevByte = i > 0 ? multipartBodyBuffer[i - 1] : null
-    const newLineDetected = oneByte === 0x0a && prevByte === 0x0d ? true : false
-    const newLineChar = oneByte === 0x0a || oneByte === 0x0d ? true : false
+    const oneByte: number = multipartBodyBuffer[i]
+    const prevByte: number | null = i > 0 ? multipartBodyBuffer[i - 1] : null
+    const newLineDetected: boolean =
+      oneByte === 0x0a && prevByte === 0x0d ? true : false
+    const newLineChar: boolean =
+      oneByte === 0x0a || oneByte === 0x0d ? true : false
 
     if (!newLineChar) lastline += String.fromCharCode(oneByte)
 
@@ -109,7 +67,7 @@ export function parse(multipartBodyBuffer, boundary) {
       if ('--' + boundary === lastline) {
         const j = buffer.length - lastline.length
         const part = buffer.slice(0, j - 1)
-        const p = { header: header, info: info, part: part }
+        const p: Part = { header: header, info: info, part: part }
 
         allParts.push(process(p))
         buffer = []
@@ -131,7 +89,7 @@ export function parse(multipartBodyBuffer, boundary) {
 //  read the boundary from the content-type header sent by the http client
 //  this value may be similar to:
 //  'multipart/form-data; boundary=----WebKitFormBoundaryvm5A9tzU1ONaGP5B',
-export function getBoundary(header) {
+export function getBoundary(header: string): string {
   const items = header.split(';')
   if (items) {
     for (let i = 0; i < items.length; i++) {
@@ -145,23 +103,81 @@ export function getBoundary(header) {
   return ''
 }
 
-export function DemoData() {
+export function DemoData(): Buffer {
   let body = 'trash1\r\n'
   body += '------WebKitFormBoundaryvef1fLxmoUdYZWXp\r\n'
   body +=
     'Content-Disposition: form-data; name="uploads[]"; filename="A.txt"\r\n'
-  ;(body += 'Content-Type: text/plain\r\n'), (body += '\r\n\r\n')
+  body += 'Content-Type: text/plain\r\n'
+  body += '\r\n'
   body += '@11X'
   body += '111Y\r\n'
   body += '111Z\rCCCC\nCCCC\r\nCCCCC@\r\n\r\n'
   body += '------WebKitFormBoundaryvef1fLxmoUdYZWXp\r\n'
   body +=
     'Content-Disposition: form-data; name="uploads[]"; filename="B.txt"\r\n'
-  ;(body += 'Content-Type: text/plain\r\n'), (body += '\r\n\r\n')
+  body += 'Content-Type: text/plain\r\n'
+  body += '\r\n'
+  body += '@22X'
+  body += '222Y\r\n'
+  body += '222Z\r222W\n2220\r\n666@\r\n'
+  body += 'Content-Disposition: form-data; name="input1"\r\n'
+  body += '\r\n'
   body += '@22X'
   body += '222Y\r\n'
   body += '222Z\r222W\n2220\r\n666@\r\n'
   body += '------WebKitFormBoundaryvef1fLxmoUdYZWXp--\r\n'
-  return new Buffer(body, 'utf-8')
-  // returns a Buffered payload, so the it will be treated as a binary content.
+  return Buffer.from(body)
+}
+
+function process(part: Part): Input {
+  // will transform this object:
+  // { header: 'Content-Disposition: form-data; name="uploads[]"; filename="A.txt"',
+  // info: 'Content-Type: text/plain',
+  // part: 'AAAABBBB' }
+  // into this one:
+  // { filename: 'A.txt', type: 'text/plain', data: <Buffer 41 41 41 41 42 42 42 42> }
+  const obj = function(str: string) {
+    const k = str.split('=')
+    const a = k[0].trim()
+
+    const b = JSON.parse(k[1].trim())
+    const o = {}
+    Object.defineProperty(o, a, {
+      value: b,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    })
+    return o
+  }
+  const header = part.header.split(';')
+
+  const filenameData = header[2]
+  let input = {}
+  if (filenameData) {
+    input = obj(filenameData)
+    const contentType = part.info.split(':')[1].trim()
+    Object.defineProperty(input, 'type', {
+      value: contentType,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    })
+  } else {
+    Object.defineProperty(input, 'name', {
+      value: header[1].split('=')[1].replace(/"/g, ''),
+      writable: true,
+      enumerable: true,
+      configurable: true
+    })
+  }
+
+  Object.defineProperty(input, 'data', {
+    value: new Buffer(part.part),
+    writable: true,
+    enumerable: true,
+    configurable: true
+  })
+  return input as Input
 }

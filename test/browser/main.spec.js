@@ -2,9 +2,10 @@ const axios = require('axios')
 const { w3cwebsocket } = require('websocket')
 const { providers } = require('eth-connect')
 
-const { ephemeralkey } = require('../../dist/ephemeralkey')
-const { wrapFetch, wrapAxios } = require('../../dist/wrappers')
-const { createFormData } = require('../../dist/helpers')
+const { ephemeralkey, wrappers, utils } = require('../../dist')
+
+const { wrapAxios, wrapFetch } = wrappers
+const { createFormData } = utils
 
 const expect = chai.expect
 const provider = new providers.WebSocketProvider('ws://127.0.0.1:8546', {

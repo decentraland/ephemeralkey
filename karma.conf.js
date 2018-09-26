@@ -29,8 +29,7 @@ module.exports = function(config) {
       'ChromeHeadless',
       'Firefox',
       'FirefoxDeveloper',
-      'FirefoxNightly',
-      'IE_no_addons'
+      'FirefoxNightly'
     ],
     autoWatch: false,
     concurrency: Infinity,
@@ -39,10 +38,6 @@ module.exports = function(config) {
       FirefoxHeadless: {
         base: 'Firefox',
         flags: ['-headless']
-      },
-      IE_no_addons: {
-        base: 'IE',
-        flags: ['-extoff']
       }
     }
   })

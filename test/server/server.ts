@@ -5,9 +5,12 @@ const cors = require('cors')
 
 const { parse, getBoundary } = require('./multipart')
 const { ephemeralkey } = require('../../src/ephemeralkey')
-const { headerValidator } = require('../../src/middlewares')
+const { middlewares } = require('../../src/middlewares')
+const port = process.env.PORT_TO_USE
 
 const app = e()
+
+const { headerValidator } = middlewares
 
 app.use(cors())
 
@@ -68,6 +71,10 @@ app.get('/', async (_, res) => {
   res.status(200).send({ valid: true })
 })
 
-// app.listen(3001, () => console.log('ready..')) // uncomment if you want to test with the server in other tab
-
-module.exports = app
+if (port) {
+  module.exports = app.listen(port, () =>
+    console.log(`listening to port ${port}`)
+  )
+} else {
+  module.exports = app
+}

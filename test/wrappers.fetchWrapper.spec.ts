@@ -7,10 +7,12 @@ const expect = chai.expect
 
 import { generateEphemeralKeys } from '../src/ephemeralkey/ephemeralkey'
 import { UserData } from '../src/ephemeralkey/types'
-import { wrapFetch } from '../src/wrappers'
+import { wrappers } from '../src/wrappers'
 import { testWithServer } from './helpers/end2end'
 
-const url = 'http://localhost:3001/'
+const { wrapFetch } = wrappers
+
+let url: string
 let wrappedFetch
 
 const request: any = {
@@ -25,7 +27,8 @@ describe('FetchWrapper', function() {
   testWithServer(doTest)
 })
 
-function doTest(provider: any) {
+function doTest(provider: any, port: string) {
+  url = `http://localhost:${port}/`
   const file = fs.createWriteStream('fetch.txt')
 
   for (let i = 0; i <= 25000; i++) {

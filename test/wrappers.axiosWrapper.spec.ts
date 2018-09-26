@@ -5,12 +5,13 @@ import FormData from 'formdata-node'
 
 const expect = chai.expect
 
-import { wrapAxios } from '../src/wrappers'
+import { wrappers } from '../src/wrappers'
 import { UserData } from '../src/ephemeralkey/types'
 import { generateEphemeralKeys } from '../src/ephemeralkey/ephemeralkey'
 import { testWithServer } from './helpers/end2end'
 
-const url = 'http://localhost:3001/'
+let url: string
+const { wrapAxios } = wrappers
 
 const request: any = {
   method: 'POST',
@@ -24,7 +25,9 @@ describe('AxiosWrapper', function() {
   testWithServer(doTest)
 })
 
-function doTest(provider: any) {
+function doTest(provider: any, port: string) {
+  url = `http://localhost:${port}/`
+
   const file = fs.createWriteStream('axios.txt')
 
   for (let i = 0; i <= 1000; i++) {
