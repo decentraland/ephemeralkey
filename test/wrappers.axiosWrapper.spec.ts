@@ -1,7 +1,6 @@
 import * as chai from 'chai'
 import axios from 'axios'
 import * as fs from 'fs'
-import FormData from 'formdata-node'
 
 const expect = chai.expect
 
@@ -9,16 +8,14 @@ import { wrappers } from '../src/wrappers'
 import { UserData } from '../src/ephemeralkey/types'
 import { generateEphemeralKeys } from '../src/ephemeralkey/ephemeralkey'
 import { testWithServer } from './helpers/end2end'
+import { createFormData } from '../src/helpers/dataHelper'
 
 let url: string
 const { wrapAxios } = wrappers
 
 const request: any = {
   method: 'POST',
-  data: JSON.stringify({ param1: 'data1', param2: 'data2' }),
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  data: JSON.stringify({ param1: 'data1', param2: 'data2' })
 }
 
 describe('AxiosWrapper', function() {
@@ -73,10 +70,11 @@ function doTest(provider: any, port: string) {
   })
 
   it('should post multipart', async function() {
-    const formdata = new FormData()
-    formdata.append('name', 'Decentraland')
-    formdata.append('domain', 'org')
-    formdata.append('the_file', fs.createReadStream('axios.txt'))
+    const formdata = createFormData({
+      name: 'Decentraland',
+      domain: 'org',
+      the_file: fs.createReadStream('axios.txt')
+    })
 
     const res = await axios(`${url}multipart`, {
       method: 'POST',

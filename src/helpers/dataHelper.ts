@@ -21,9 +21,7 @@ export function createFormData(param) {
   for (let key in param) {
     let value = param[key]
     if (value.toString() === '[object Blob]') {
-      // const reader = new FileReader()
-      // reader.readAsArrayBuffer(value)
-      // value = Buffer.from(value, 'binary')
+      throw new Error('Invalid type Blob. Please convert it to Buffer')
     }
     formData.append(key, ...value)
   }

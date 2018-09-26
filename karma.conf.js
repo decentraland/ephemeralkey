@@ -3,9 +3,6 @@ module.exports = function(config) {
     frameworks: ['mocha', 'chai', 'browserify'],
     files: ['src/**/*.ts', 'test/browser/*.js'],
     karmaTypescriptConfig: {
-      // bundlerOptions: {
-      //   transforms: [require('karma-typescript-es6-transform')()]
-      // },
       tsconfig: './tsconfig.json'
     },
     preprocessors: {

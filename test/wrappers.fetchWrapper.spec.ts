@@ -1,7 +1,6 @@
 import * as chai from 'chai'
 import fetch from 'node-fetch'
 import * as fs from 'fs'
-import FormData from 'formdata-node'
 
 const expect = chai.expect
 
@@ -9,6 +8,7 @@ import { generateEphemeralKeys } from '../src/ephemeralkey/ephemeralkey'
 import { UserData } from '../src/ephemeralkey/types'
 import { wrappers } from '../src/wrappers'
 import { testWithServer } from './helpers/end2end'
+import { createFormData } from '../src/helpers/dataHelper'
 
 const { wrapFetch } = wrappers
 
@@ -75,10 +75,11 @@ function doTest(provider: any, port: string) {
   })
 
   it('should post multipart', async function() {
-    const formdata = new FormData()
-    formdata.append('name', 'Decentraland')
-    formdata.append('domain', 'org')
-    formdata.append('the_file', fs.createReadStream('fetch.txt'))
+    const formdata = createFormData({
+      name: 'Decentraland',
+      domain: 'org',
+      the_file: fs.createReadStream('fetch.txt')
+    })
 
     const res = await wrappedFetch(`${url}multipart`, {
       method: 'POST',
