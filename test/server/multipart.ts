@@ -1,16 +1,3 @@
-/**
- * Multipart Parser (Finite State Machine)
- * usage:
- * const multipart = require('./multipart.js');
- * const body = multipart.DemoData(); 							   // raw body
- * const body = new Buffer(event['body-json'].toString(),'base64'); // AWS case
- * const boundary = multipart.getBoundary(event.params.header['content-type']);
- * const parts = multipart.Parse(body,boundary);
- * each part is:
- * { filename: 'A.txt', type: 'text/plain', data: <Buffer 41 41 41 41 42 42 42 42> }
- *  or { name: 'key', data: <Buffer 41 41 41 41 42 42 42 42> }
- */
-
 type Part = {
   header: string
   info: string
@@ -101,33 +88,6 @@ export function getBoundary(header: string): string {
     }
   }
   return ''
-}
-
-export function DemoData(): Buffer {
-  let body = 'trash1\r\n'
-  body += '------WebKitFormBoundaryvef1fLxmoUdYZWXp\r\n'
-  body +=
-    'Content-Disposition: form-data; name="uploads[]"; filename="A.txt"\r\n'
-  body += 'Content-Type: text/plain\r\n'
-  body += '\r\n'
-  body += '@11X'
-  body += '111Y\r\n'
-  body += '111Z\rCCCC\nCCCC\r\nCCCCC@\r\n\r\n'
-  body += '------WebKitFormBoundaryvef1fLxmoUdYZWXp\r\n'
-  body +=
-    'Content-Disposition: form-data; name="uploads[]"; filename="B.txt"\r\n'
-  body += 'Content-Type: text/plain\r\n'
-  body += '\r\n'
-  body += '@22X'
-  body += '222Y\r\n'
-  body += '222Z\r222W\n2220\r\n666@\r\n'
-  body += 'Content-Disposition: form-data; name="input1"\r\n'
-  body += '\r\n'
-  body += '@22X'
-  body += '222Y\r\n'
-  body += '222Z\r222W\n2220\r\n666@\r\n'
-  body += '------WebKitFormBoundaryvef1fLxmoUdYZWXp--\r\n'
-  return Buffer.from(body)
 }
 
 function process(part: Part): Input {
