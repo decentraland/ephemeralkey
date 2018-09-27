@@ -9,8 +9,7 @@ import {
   HTTPRequest,
   Identity,
   UserData,
-  Headers,
-  ServerHeaders
+  Headers
 } from './types'
 
 const ONE_MINUTE = 1000 * 60
@@ -72,7 +71,7 @@ export function getHeaders(userData: UserData, request: HTTPRequest): Headers {
 export async function validateHeaders(
   provider: any, // @nacho TODO: should type a provider
   request: HTTPRequest,
-  headers: ServerHeaders
+  headers: Headers
 ): Promise<boolean | Error> {
   const { publicKey, ephemeralPublicKey } = decodeIdentity(
     headers['x-identity']

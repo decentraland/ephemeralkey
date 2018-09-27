@@ -19,10 +19,6 @@ export type Headers = {
   [key: string]: string
 }
 
-export type ServerHeaders = Headers & {
-  'content-length': string
-}
-
 export type UserData = Keys & {
   address: string
   message: string

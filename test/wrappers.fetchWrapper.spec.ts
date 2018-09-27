@@ -6,11 +6,9 @@ const expect = chai.expect
 
 import { generateEphemeralKeys } from '../src/ephemeralkey/ephemeralkey'
 import { UserData } from '../src/ephemeralkey/types'
-import { wrappers } from '../src/wrappers'
+import { wrapFetch } from '../src/wrappers'
 import { testWithServer } from './helpers/end2end'
 import { createFormData } from '../src/helpers/dataHelper'
-
-const { wrapFetch } = wrappers
 
 let url: string
 let wrappedFetch
@@ -31,8 +29,8 @@ function doTest(provider: any, port: string) {
   url = `http://localhost:${port}/`
   const file = fs.createWriteStream('fetch.txt')
 
-  for (let i = 0; i <= 25000; i++) {
-    // ~ 11mb file
+  for (let i = 0; i <= 20000; i++) {
+    // ~ 9mb file
     file.write(
       'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n'
     )

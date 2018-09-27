@@ -8,6 +8,7 @@ Lib usage for creating an ephemeral key to be used by Decentraland's apps
   - [generateEphemeralKeys](#generate)
   - [getHeaders](#headers)
   - [validateHeaders](#validate)
+  - [decodeIdentity](#decodeIdentity)
 - [Utils](#utils)
   - [Middlewares](#middlewares)
     - [headerValidator](#headerValidator)
@@ -41,12 +42,12 @@ async function generateEphemeralKeys(
 #### Usage
 
 ```ts
-import { ephemeralkey } from 'ephemeralkey'
+import { generateEphemeralKeys } from 'ephemeralkey'
 
 const decentralandInviteAddress = '0x12345'
 const inviteTokenId = '1'
 
-const userData = ephemeralkey.generateEphemeralKeys(
+const userData = generateEphemeralKeys(
   web3.currentProvider,
   decentralandInviteAddress,
   inviteTokenId
@@ -82,13 +83,13 @@ function getHeaders(userData: UserData, request: HTTPRequest): Headers
 #### Usage
 
 ```ts
-import { ephemeralkey } from 'ephemeralkey'
+import { getHeaders } from 'ephemeralkey'
 
 async function fetchWithEphemeralKey(request: HTTPRequest): Promise<any> {
   const userData = JSON.parse(
     localstorage.getItem('ephemeral-data', JSON.stringify(userData))
   )
-  const headers = ephemeralkey.getHeaders(userData, request)
+  const headers = getHeaders(userData, request)
 
   return fetch(request.url, {
     method: request.method,
@@ -142,18 +143,18 @@ const response = await fetchWithEphemeralKey({
 async function validateHeaders(
   provider: any,
   request: HTTPRequest,
-  headers: ServerHeaders
+  headers: Headers
 ): Promise<boolean | Error>
 ```
 
 #### Usage
 
 ```ts
-import { ephemeralkey } from 'ephemeralkey'
+import { validateHeaders } from 'ephemeralkey'
 
 app.post('/land', function(req, res) {
   try {
-    const validRequest = ephemeralkey.validateHeaders(
+    const validRequest = validateHeaders(
       {
         method: req.method,
         url: req.protocol + '://' + req.get('host') + req.originalUrl,
@@ -183,6 +184,33 @@ Error('Invalid timestamp')
 Error('Content size exceeded. Max length is 10 mb')
 ```
 
+### decodeIdentity
+
+Returns the address and the ephemeral public key of the user who sent the request
+
+##### Definition
+
+```ts
+function decodeIdentity(identity: string): Identity
+```
+
+##### Usage
+
+```ts
+import { decodeIdentity } from 'ephemeralkey'
+
+const identity: Identity = decodeIdentity(headers['x-identity'])
+```
+
+#### Response
+
+```ts
+{
+  publicKey: string
+  ephemeralPublicKey: string
+}
+```
+
 # Utils
 
 ## Middlewares
@@ -200,7 +228,7 @@ const e = require('express')
 const { w3cwebsocket } = require('websocket')
 const { providers } = require('eth-connect')
 
-const { ephemeralkey, middlewares } = require('ephemeralkey')
+const { headerValidator } = require('ephemeralkey')
 
 const app = e()
 
@@ -208,7 +236,7 @@ const provider = new providers.WebSocketProvider('ws://127.0.0.1:8546', {
   WebSocketConstructor: w3cwebsocket
 })
 
-app.use(middlewares.headerValidator(provider))
+app.use(headerValidator(provider))
 
 app.use(function(error, _, res, next) {
   if (error) {
@@ -237,11 +265,10 @@ Attach a request interceptor to an axios instance to send signed requests
 ```ts
 import axios from 'axios'
 
-import { ephemeralkey, wrappers } from 'ephemeralkey'
-const { wrapAxios } = wrappers
+import { generateEphemeralKeys, wrapAxios } from 'ephemeralkey'
 
 const axiosInstance = axios.create()
-const userData = await ephemeralkey.generateEphemeralKeys(
+const userData = await generateEphemeralKeys(
   provider,
   'tokenAddress',
   'tokenId'
@@ -262,8 +289,7 @@ Wrap a fetch instance to send a signed requests
 #### Usage
 
 ```ts
-import { ephemeralkey, wrappers } from 'ephemeralkey'
-const { wrapFetch } = wrappers
+import { ephemeralkey, wrapFetch } from 'ephemeralkey'
 
 const userData = await ephemeralkey.generateEphemeralKeys(
   provider,
@@ -289,8 +315,7 @@ Ceate an isomorphic FormData to send mutipart-data requests
 ##### Client-Side
 
 ```ts
-import { utils } from 'ephemeralkey'
-const { createFormData } = utils
+import { createFormData } from 'ephemeralkey'
 
 formData = createFormData({
   name: ['Decentraland'],
@@ -307,8 +332,7 @@ const res = await wrappedFetch('https://decentraland.org/api', {
 ##### Server-Side
 
 ```ts
-import { utils } from 'ephemeralkey'
-const { createFormData } = utils
+import { createFormData } from 'ephemeralkey'
 
 const formdata = createFormData({
   name: 'Decentraland',

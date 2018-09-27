@@ -17,7 +17,7 @@ export function headerValidator(provider) {
             timestamp: req.headers['x-timestamp'],
             body
           },
-          req.headers
+          { ...req.headers, 'content-length': body.byteLength }
         )
         if (isValidRequest) {
           req.rawBody = body

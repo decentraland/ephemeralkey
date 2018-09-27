@@ -2,10 +2,12 @@ const axios = require('axios')
 const { w3cwebsocket } = require('websocket')
 const { providers } = require('eth-connect')
 
-const { ephemeralkey, wrappers, utils } = require('../../dist')
-
-const { wrapAxios, wrapFetch } = wrappers
-const { createFormData } = utils
+const {
+  generateEphemeralKeys,
+  wrapAxios,
+  wrapFetch,
+  createFormData
+} = require('../../dist')
 
 const expect = chai.expect
 const provider = new providers.WebSocketProvider('ws://127.0.0.1:8546', {
@@ -48,7 +50,7 @@ describe('main', function() {
   describe('Axios', function() {
     const axiosInstance = axios.create()
     it('should generate user data and setup axios', async function() {
-      userData = await ephemeralkey.generateEphemeralKeys(
+      userData = await generateEphemeralKeys(
         provider,
         'tokenAddress',
         'tokenId'
@@ -84,7 +86,7 @@ describe('main', function() {
   describe('Fetch', function() {
     let wrappedFetch
     it('should generate user data and setup fetch', async function() {
-      userData = await ephemeralkey.generateEphemeralKeys(
+      userData = await generateEphemeralKeys(
         provider,
         'tokenAddress',
         'tokenId'

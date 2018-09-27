@@ -4,14 +4,13 @@ import * as fs from 'fs'
 
 const expect = chai.expect
 
-import { wrappers } from '../src/wrappers'
+import { wrapAxios } from '../src/wrappers'
 import { UserData } from '../src/ephemeralkey/types'
 import { generateEphemeralKeys } from '../src/ephemeralkey/ephemeralkey'
 import { testWithServer } from './helpers/end2end'
 import { createFormData } from '../src/helpers/dataHelper'
 
 let url: string
-const { wrapAxios } = wrappers
 
 const request: any = {
   method: 'POST',

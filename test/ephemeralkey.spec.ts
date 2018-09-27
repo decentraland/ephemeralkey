@@ -14,15 +14,15 @@ import {
   getHeaders,
   decodeIdentity,
   getMethodMessage,
-  validateHeaders
+  validateHeaders,
+  MAX_CONTENT_SIZE
 } from '../src/ephemeralkey/ephemeralkey'
 
 import {
   UserData,
   HTTPRequest,
   Headers,
-  Identity,
-  ServerHeaders
+  Identity
 } from '../src/ephemeralkey/types'
 
 const inviteAddress = '0x12345'
@@ -170,22 +170,16 @@ describe('EphemeralKey', function() {
     describe('validateHeaders', function() {
       it('should validate valid headers', async function() {
         const headers: Headers = await getHeaders(userData, request)
-        const isValid = await validateHeaders(provider, request, {
-          ...headers,
-          'content-length': '64000'
-        })
+        const isValid = await validateHeaders(provider, request, headers)
         expect(isValid).to.be.equal(true)
       })
 
       it('should throw invalid signature', async function() {
         const headers: Headers = await getHeaders(userData, request)
-        const serverHeaders: ServerHeaders = {
-          ...headers,
-          'content-length': '64000'
-        }
+
         await expect(
           validateHeaders(provider, request, {
-            ...serverHeaders,
+            ...headers,
             'x-timestamp': (timestamp + oneMinute).toString()
           }),
           'expect invalid signature exception:: timestamp was changed'
@@ -195,7 +189,7 @@ describe('EphemeralKey', function() {
           validateHeaders(
             provider,
             { ...request, url: 'http://market.decentraland.org/api/v1/land' },
-            serverHeaders
+            headers
           ),
           'expect invalid signature exception:: url was changed'
         ).to.be.rejectedWith('Invalid signature')
@@ -204,7 +198,7 @@ describe('EphemeralKey', function() {
           validateHeaders(
             provider,
             { ...request, body: new Buffer('{}') },
-            serverHeaders
+            headers
           ),
           'expect invalid signature exception:: body was changed'
         ).to.be.rejectedWith('Invalid signature')
@@ -213,14 +207,10 @@ describe('EphemeralKey', function() {
       it('should throw invalid certificate', async function() {
         this.timeout(999999)
         const headers: Headers = await getHeaders(userData, request)
-        const serverHeaders: ServerHeaders = {
-          ...headers,
-          'content-length': '64000'
-        }
 
         await expect(
           validateHeaders(provider, request, {
-            ...serverHeaders,
+            ...headers,
             'x-certificate':
               '0x446563656e7472616c616e642041636365737320417574680a4b65793a203033316636623461346530313437356663393736323634353930626436346135333933333866323864623839633361313466343035333734323061343637656236642e0a546f6b656e3a20756e6b6e6f776e3a2f2f307831323334352f310a446174653a205765642053657020313920323031382031353a30323a313320474d542d3033303020282d3033290a457870697265733a205765642053657020313920323031382031353a30323a313320474d542d3033303020282d30332920'
           }),
@@ -229,7 +219,7 @@ describe('EphemeralKey', function() {
 
         await expect(
           validateHeaders(provider, request, {
-            ...serverHeaders,
+            ...headers,
             'x-certificate-signature':
               '0xae888dea3ff41fa396d780a1a37902e244e56e14a5d3d627b946f8f7af9305db786d5907875a575338c1ebd658f48329d851badf98854cf7cba06e881d7bc0521c'
           }),
@@ -237,18 +227,28 @@ describe('EphemeralKey', function() {
         ).to.be.rejectedWith('Invalid certificate')
       })
 
+      it('should throw content-length limit exceeded', async function() {
+        const headers: Headers = await getHeaders(userData, request)
+
+        await expect(
+          validateHeaders(provider, request, {
+            ...headers,
+            'content-length': (1024 * 1024 * 11).toString() // 11mb
+          }),
+          'expect ontent-length limit exceeded'
+        ).be.rejectedWith(
+          `Content size exceeded. Max length is ${MAX_CONTENT_SIZE} bytes`
+        )
+      })
+
       it('should throw invalid timeout', async function() {
         this.timeout(9999999)
         const headers: Headers = await getHeaders(userData, request)
-        const serverHeaders: ServerHeaders = {
-          ...headers,
-          'content-length': '64000'
-        }
 
         await wait(oneMinute * 1.5)
 
         await expect(
-          validateHeaders(provider, request, serverHeaders),
+          validateHeaders(provider, request, headers),
           'expect invalid timestamp exception'
         ).be.rejectedWith('Invalid timestamp')
       })

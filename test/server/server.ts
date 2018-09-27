@@ -4,13 +4,10 @@ const { providers } = require('eth-connect')
 const cors = require('cors')
 
 const { parse, getBoundary } = require('./multipart')
-const { ephemeralkey } = require('../../src/ephemeralkey')
-const { middlewares } = require('../../src/middlewares')
+const { headerValidator } = require('../../src/middlewares')
 const port = process.env.PORT_TO_USE
 
 const app = e()
-
-const { headerValidator } = middlewares
 
 app.use(cors())
 
@@ -22,7 +19,7 @@ app.use(headerValidator(provider))
 
 app.use(function(error, _, res, next) {
   if (error) {
-    res.status(401).send({ message: error.message })
+    return res.status(401).send({ message: error.message })
   }
   next()
 })
@@ -43,7 +40,7 @@ app.post('/multipart', async (req, res) => {
           'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n'
       }
     } else if (parts[2].filename === 'fetch.txt') {
-      for (let i = 0; i <= 25000; i++) {
+      for (let i = 0; i <= 20000; i++) {
         file +=
           'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n'
       }

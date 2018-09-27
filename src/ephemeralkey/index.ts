@@ -1,11 +1,8 @@
-import {
+export {
   generateEphemeralKeys,
   getHeaders,
-  validateHeaders
+  validateHeaders,
+  decodeIdentity
 } from './ephemeralkey'
 
-export const ephemeralkey = {
-  generateEphemeralKeys,
-  getHeaders,
-  validateHeaders
-}
+export * from './types'

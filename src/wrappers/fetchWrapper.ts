@@ -4,7 +4,7 @@ import { FetchRequest } from './types'
 import { getRequestData } from './commons'
 
 export function wrapFetch(userData: UserData) {
-  return fetch => async (url: string, opt: any[]): Promise<Response> => {
+  return fetch => async (url: string, opt: any[]): Promise<any> => {
     const req = await signRequest(userData, url, opt)
     return fetch(...req)
   }

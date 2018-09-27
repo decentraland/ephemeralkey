@@ -1,3 +1,1 @@
-import { headerValidator } from './headerValidator'
-
-export const middlewares = { headerValidator }
+export { headerValidator } from './headerValidator'
