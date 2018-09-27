@@ -11,15 +11,16 @@ export type Keys = {
 }
 
 export type Headers = {
-  'X-Identity': string
-  'X-Signature': string
-  'X-Certificate': string
-  'X-Certificate-Signature': string
-  'X-Timestamp': string
+  'x-identity': string
+  'x-signature': string
+  'x-certificate': string
+  'x-certificate-signature': string
+  'x-timestamp': string
+  [key: string]: string
 }
 
 export type ServerHeaders = Headers & {
-  'Content-Length': string
+  'content-length': string
 }
 
 export type UserData = Keys & {
@@ -29,7 +30,7 @@ export type UserData = Keys & {
 }
 
 export type HTTPRequest = {
-  method: 'GET' | 'POST'
+  method: string
   url: string
   body: Buffer
   timestamp?: number

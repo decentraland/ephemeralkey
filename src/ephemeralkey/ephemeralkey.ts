@@ -14,7 +14,7 @@ import {
 } from './types'
 
 const ONE_MINUTE = 1000 * 60
-export const MAX_CONTENT_SIZE = 1024 * 64 // 64kb
+export const MAX_CONTENT_SIZE = 10485760 // 10mb
 
 export async function generateEphemeralKeys(
   provider: any, // @nacho TODO: should type a provider
@@ -43,10 +43,7 @@ export async function generateEphemeralKeys(
   return { address: accounts[0], signature, message, ...keys }
 }
 
-export async function getHeaders(
-  userData: UserData,
-  request: HTTPRequest
-): Promise<Headers> {
+export function getHeaders(userData: UserData, request: HTTPRequest): Headers {
   const {
     address,
     ephemeralPrivateKey,
@@ -61,14 +58,14 @@ export async function getHeaders(
     Buffer.from(ephemeralPrivateKey, 'hex')
   )
 
-  const xIdentity = await getIdentity(address, ephemeralPublicKey)
+  const xIdentity = getIdentity(address, ephemeralPublicKey)
 
   return {
-    'X-Identity': xIdentity,
-    'X-Signature': signed.signature.toString('hex'),
-    'X-Certificate': message,
-    'X-Certificate-Signature': signature,
-    'X-Timestamp': (request.timestamp as number).toString()
+    'x-identity': xIdentity,
+    'x-signature': signed.signature.toString('hex'),
+    'x-certificate': message,
+    'x-certificate-signature': signature,
+    'x-timestamp': (request.timestamp as number).toString()
   }
 }
 
@@ -78,37 +75,37 @@ export async function validateHeaders(
   headers: ServerHeaders
 ): Promise<boolean | Error> {
   const { publicKey, ephemeralPublicKey } = decodeIdentity(
-    headers['X-Identity']
+    headers['x-identity']
   )
-  const timestamp = parseInt(headers['X-Timestamp'], 10)
+  const timestamp = parseInt(headers['x-timestamp'], 10)
 
-  validateContentLength(headers['Content-Length'])
+  validateContentLength(headers['content-length'])
   validateTimestamp(timestamp)
   validateSignature(
     { ...request, timestamp },
-    headers['X-Signature'],
+    headers['x-signature'],
     ephemeralPublicKey
   )
   await validateCertificate(
     provider,
     publicKey,
-    headers['X-Certificate'],
-    headers['X-Certificate-Signature']
+    headers['x-certificate'],
+    headers['x-certificate-signature']
   )
-
   return true
 }
 
 function getMessage(params: Message) {
   const { ephemeralPublicKey, network, tokenAddress, nftId } = params
   const now = new Date()
-  const date = now.toISOString()
+  const nowISO = now.toISOString()
   now.setMonth(now.getMonth() + 1) // expires in one month
+  const expiresISO = now.toISOString()
   return `Decentraland Access Auth
 Key: ${ephemeralPublicKey}.
 Token: ${network}://${tokenAddress}/${nftId}
-Date: ${date}
-Expires: ${now.toISOString()}`
+Date: ${nowISO}
+Expires: ${expiresISO}`
 }
 
 function getIdentity(address: string, ephemeralPublicKey: string): string {
@@ -158,6 +155,7 @@ function validateSignature(
   ephemeralPublicKey: string
 ): void | Error {
   const methodMessage = getMethodMessage(request)
+
   if (
     !secp256k1.verify(
       methodMessage,
@@ -180,6 +178,7 @@ async function validateCertificate(
     certificate,
     signature
   )
+
   if (publicKey !== recoveredAddress) throw new Error('Invalid certificate')
 }
 
@@ -191,6 +190,7 @@ export function getMethodMessage(param: HTTPRequest): Buffer {
     Buffer.from((timestamp as number).toString()),
     body
   ])
+
   return digest(message)
 }
 

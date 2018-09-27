@@ -4,7 +4,7 @@ import * as chaiAsPromised from 'chai-as-promised'
 import { w3cwebsocket } from 'websocket'
 import { RequestManager, providers } from 'eth-connect'
 
-import { wait } from './helpers'
+import { wait } from './helpers/helpers'
 
 chai.use(chaiAsPromised)
 const expect = chai.expect
@@ -14,8 +14,7 @@ import {
   getHeaders,
   decodeIdentity,
   getMethodMessage,
-  validateHeaders,
-  MAX_CONTENT_SIZE
+  validateHeaders
 } from '../src/ephemeralkey/ephemeralkey'
 
 import {
@@ -107,23 +106,23 @@ describe('EphemeralKey', function() {
       it('should get headers', async function() {
         const headers: Headers = await getHeaders(userData, request)
         const accounts = await requestManager.eth_accounts()
-        const identity: Identity = decodeIdentity(headers['X-Identity'])
+        const identity: Identity = decodeIdentity(headers['x-identity'])
 
         expect(identity.ephemeralPublicKey).to.equal(
           userData.ephemeralPublicKey
         )
         expect(identity.publicKey).to.equal(accounts[0])
-        expect(headers['X-Signature'].length).to.gt(0)
+        expect(headers['x-signature'].length).to.gt(0)
         expect(
           secp256k1.verify(
             getMethodMessage(request),
-            Buffer.from(headers['X-Signature'], 'hex'),
+            Buffer.from(headers['x-signature'], 'hex'),
             Buffer.from(userData.ephemeralPublicKey, 'hex')
           ),
           'verify signature'
         ).to.equal(true)
-        expect(headers['X-Certificate']).to.equal(userData.message)
-        expect(headers['X-Certificate-Signature']).to.equal(userData.signature)
+        expect(headers['x-certificate']).to.equal(userData.message)
+        expect(headers['x-certificate-signature']).to.equal(userData.signature)
       })
 
       it('should get different signature for each request', async function() {
@@ -147,23 +146,23 @@ describe('EphemeralKey', function() {
           timestamp: timestamp + 1
         })
 
-        expect(headers['X-Signature']).to.not.equal(
-          anotherHeaders['X-Signature']
+        expect(headers['x-signature']).to.not.equal(
+          anotherHeaders['x-signature']
         )
-        expect(headers['X-Signature']).to.not.equal(
-          justAnotherHeaders['X-Signature']
+        expect(headers['x-signature']).to.not.equal(
+          justAnotherHeaders['x-signature']
         )
-        expect(headers['X-Signature']).to.not.equal(
-          hackedRequest['X-Signature']
+        expect(headers['x-signature']).to.not.equal(
+          hackedRequest['x-signature']
         )
-        expect(anotherHeaders['X-Signature']).to.not.equal(
-          justAnotherHeaders['X-Signature']
+        expect(anotherHeaders['x-signature']).to.not.equal(
+          justAnotherHeaders['x-signature']
         )
-        expect(anotherHeaders['X-Signature']).to.not.equal(
-          hackedRequest['X-Signature']
+        expect(anotherHeaders['x-signature']).to.not.equal(
+          hackedRequest['x-signature']
         )
-        expect(justAnotherHeaders['X-Signature']).to.not.equal(
-          hackedRequest['X-Signature']
+        expect(justAnotherHeaders['x-signature']).to.not.equal(
+          hackedRequest['x-signature']
         )
       })
     })
@@ -173,33 +172,21 @@ describe('EphemeralKey', function() {
         const headers: Headers = await getHeaders(userData, request)
         const isValid = await validateHeaders(provider, request, {
           ...headers,
-          'Content-Length': '64000'
+          'content-length': '64000'
         })
         expect(isValid).to.be.equal(true)
-      })
-
-      it('should throw invalid content length', async function() {
-        const headers: Headers = await getHeaders(userData, request)
-        await expect(
-          validateHeaders(provider, request, {
-            ...headers,
-            'Content-Length': '66000'
-          })
-        ).to.be.rejectedWith(
-          `Content size exceeded. Max length is ${MAX_CONTENT_SIZE} bytes`
-        )
       })
 
       it('should throw invalid signature', async function() {
         const headers: Headers = await getHeaders(userData, request)
         const serverHeaders: ServerHeaders = {
           ...headers,
-          'Content-Length': '64000'
+          'content-length': '64000'
         }
         await expect(
           validateHeaders(provider, request, {
             ...serverHeaders,
-            'X-Timestamp': (timestamp + oneMinute).toString()
+            'x-timestamp': (timestamp + oneMinute).toString()
           }),
           'expect invalid signature exception:: timestamp was changed'
         ).to.be.rejectedWith('Invalid signature')
@@ -228,13 +215,13 @@ describe('EphemeralKey', function() {
         const headers: Headers = await getHeaders(userData, request)
         const serverHeaders: ServerHeaders = {
           ...headers,
-          'Content-Length': '64000'
+          'content-length': '64000'
         }
 
         await expect(
           validateHeaders(provider, request, {
             ...serverHeaders,
-            'X-Certificate':
+            'x-certificate':
               '0x446563656e7472616c616e642041636365737320417574680a4b65793a203033316636623461346530313437356663393736323634353930626436346135333933333866323864623839633361313466343035333734323061343637656236642e0a546f6b656e3a20756e6b6e6f776e3a2f2f307831323334352f310a446174653a205765642053657020313920323031382031353a30323a313320474d542d3033303020282d3033290a457870697265733a205765642053657020313920323031382031353a30323a313320474d542d3033303020282d30332920'
           }),
           'expect invalid certificate exception:: certificate was changed'
@@ -243,7 +230,7 @@ describe('EphemeralKey', function() {
         await expect(
           validateHeaders(provider, request, {
             ...serverHeaders,
-            'X-Certificate-Signature':
+            'x-certificate-signature':
               '0xae888dea3ff41fa396d780a1a37902e244e56e14a5d3d627b946f8f7af9305db786d5907875a575338c1ebd658f48329d851badf98854cf7cba06e881d7bc0521c'
           }),
           'expect invalid certificate exception:: certificate signature was changed'
@@ -255,7 +242,7 @@ describe('EphemeralKey', function() {
         const headers: Headers = await getHeaders(userData, request)
         const serverHeaders: ServerHeaders = {
           ...headers,
-          'Content-Length': '64000'
+          'content-length': '64000'
         }
 
         await wait(oneMinute * 1.5)
