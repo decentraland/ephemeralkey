@@ -144,7 +144,7 @@ async function validateHeaders(
   provider: any,
   request: HTTPRequest,
   headers: Headers
-): Promise<boolean | Error>
+): Promise<boolean>
 ```
 
 #### Usage

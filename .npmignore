@@ -2,3 +2,4 @@ src
 test
 tsconfig.json
 tsconfig-build.json
+scripts

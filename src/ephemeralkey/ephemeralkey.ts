@@ -16,7 +16,7 @@ const ONE_MINUTE = 1000 * 60
 export const MAX_CONTENT_SIZE = 10485760 // 10mb
 
 export async function generateEphemeralKeys(
-  provider: any, // @nacho TODO: should type a provider
+  provider: any,
   tokenAddress: string,
   nftId: string
 ): Promise<UserData> {
@@ -69,10 +69,10 @@ export function getHeaders(userData: UserData, request: HTTPRequest): Headers {
 }
 
 export async function validateHeaders(
-  provider: any, // @nacho TODO: should type a provider
+  provider: any,
   request: HTTPRequest,
   headers: Headers
-): Promise<boolean | Error> {
+): Promise<boolean> {
   const { publicKey, ephemeralPublicKey } = decodeIdentity(
     headers['x-identity']
   )
@@ -140,7 +140,7 @@ function validateContentLength(contentSize: string) {
   }
 }
 
-function validateTimestamp(timestamp: number): void | Error {
+function validateTimestamp(timestamp: number): void {
   const elapsedTime = Date.now() - timestamp
   if (elapsedTime > ONE_MINUTE) {
     // valid for one minute
@@ -152,7 +152,7 @@ function validateSignature(
   request: HTTPRequest,
   signature: string,
   ephemeralPublicKey: string
-): void | Error {
+): void {
   const methodMessage = getMethodMessage(request)
 
   if (
@@ -171,7 +171,7 @@ async function validateCertificate(
   publicKey: string,
   certificate: string,
   signature: string
-): Promise<void | Error> {
+): Promise<void> {
   const requestManager = new RequestManager(provider)
   const recoveredAddress = await requestManager.personal_ecRecover(
     certificate,
