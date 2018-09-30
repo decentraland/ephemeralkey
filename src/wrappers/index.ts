@@ -1,4 +1,4 @@
-import { wrapFetch } from './fetchWrapper'
-import { wrapAxios } from './axiosWrapper'
+export { wrapFetch } from './fetchWrapper'
+export { wrapAxios } from './axiosWrapper'
 
-export const wrappers = { wrapAxios, wrapFetch }
+export * from './types'
