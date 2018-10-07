@@ -50,11 +50,7 @@ describe('main', function() {
   describe('Axios', function() {
     const axiosInstance = axios.create()
     it('should generate user data and setup axios', async function() {
-      userData = await generateEphemeralKeys(
-        provider,
-        'tokenAddress',
-        'tokenId'
-      )
+      userData = await generateEphemeralKeys(provider, 'tokenAddress')
       wrapAxios(userData)(axiosInstance)
     })
 
@@ -86,11 +82,7 @@ describe('main', function() {
   describe('Fetch', function() {
     let wrappedFetch
     it('should generate user data and setup fetch', async function() {
-      userData = await generateEphemeralKeys(
-        provider,
-        'tokenAddress',
-        'tokenId'
-      )
+      userData = await generateEphemeralKeys(provider, 'tokenAddress')
       wrappedFetch = wrapFetch(userData)(window.fetch)
     })
 

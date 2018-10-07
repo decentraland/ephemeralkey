@@ -6,19 +6,20 @@ import { getNetworkById } from '../helpers/networkHelper'
 import {
   Message,
   Keys,
-  HTTPRequest,
+  Request,
   Identity,
   UserData,
-  Headers
+  Headers,
+  HeaderValidatorResponse
 } from './types'
 
+export const DURATION_IN_MONTH = 1 // 1 month
 const ONE_MINUTE = 1000 * 60
 export const MAX_CONTENT_SIZE = 10485760 // 10mb
 
 export async function generateEphemeralKeys(
   provider: any,
-  tokenAddress: string,
-  nftId: string
+  tokenAddress: string
 ): Promise<UserData> {
   const requestManager = new RequestManager(provider)
   const networkId = await requestManager.net_version()
@@ -26,23 +27,28 @@ export async function generateEphemeralKeys(
 
   // Generate ephemeral keys
   const keys = generateKeyPair()
+
+  const now = new Date()
+  const expiresAt = getExpireDate(now)
+
   // Get message
   const message = await utils.toHex(
     getMessage({
       ephemeralPublicKey: keys.ephemeralPublicKey,
       network: getNetworkById(networkId),
       tokenAddress,
-      nftId
+      now,
+      expiresAt
     })
   )
 
   // Sign message
   const signature = await requestManager.personal_sign(message, accounts[0], '')
 
-  return { address: accounts[0], signature, message, ...keys }
+  return { address: accounts[0], signature, message, expiresAt, ...keys }
 }
 
-export function getHeaders(userData: UserData, request: HTTPRequest): Headers {
+export function getHeaders(userData: UserData, request: Request): Headers {
   const {
     address,
     ephemeralPrivateKey,
@@ -70,41 +76,46 @@ export function getHeaders(userData: UserData, request: HTTPRequest): Headers {
 
 export async function validateHeaders(
   provider: any,
-  request: HTTPRequest,
+  request: Request,
   headers: Headers
-): Promise<boolean> {
-  const { publicKey, ephemeralPublicKey } = decodeIdentity(
-    headers['x-identity']
-  )
-  const timestamp = parseInt(headers['x-timestamp'], 10)
+): Promise<HeaderValidatorResponse> {
+  try {
+    const { publicKey, ephemeralPublicKey } = decodeIdentity(
+      headers['x-identity']
+    )
+    const timestamp = parseInt(headers['x-timestamp'], 10)
 
-  validateContentLength(headers['content-length'])
-  validateTimestamp(timestamp)
-  validateSignature(
-    { ...request, timestamp },
-    headers['x-signature'],
-    ephemeralPublicKey
-  )
-  await validateCertificate(
-    provider,
-    publicKey,
-    headers['x-certificate'],
-    headers['x-certificate-signature']
-  )
-  return true
+    validateContentLength(headers['content-length'])
+    validateTimestamp(timestamp)
+    validateSignature(
+      { ...request, timestamp },
+      headers['x-signature'],
+      ephemeralPublicKey
+    )
+    await validateCertificate(
+      provider,
+      publicKey,
+      headers['x-certificate'],
+      headers['x-certificate-signature']
+    )
+    return { success: true }
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 function getMessage(params: Message) {
-  const { ephemeralPublicKey, network, tokenAddress, nftId } = params
-  const now = new Date()
-  const nowISO = now.toISOString()
-  now.setMonth(now.getMonth() + 1) // expires in one month
-  const expiresISO = now.toISOString()
+  const { ephemeralPublicKey, network, tokenAddress, now, expiresAt } = params
   return `Decentraland Access Auth
 Key: ${ephemeralPublicKey}.
-Token: ${network}://${tokenAddress}/${nftId}
-Date: ${nowISO}
-Expires: ${expiresISO}`
+Token: ${network}://${tokenAddress}
+Date: ${now.toISOString()}
+Expires: ${expiresAt.toISOString()}`
+}
+
+function getExpireDate(now: Date): Date {
+  now.setMonth(now.getMonth() + DURATION_IN_MONTH)
+  return now
 }
 
 function getIdentity(address: string, ephemeralPublicKey: string): string {
@@ -149,7 +160,7 @@ function validateTimestamp(timestamp: number): void {
 }
 
 function validateSignature(
-  request: HTTPRequest,
+  request: Request,
   signature: string,
   ephemeralPublicKey: string
 ): void {
@@ -181,7 +192,7 @@ async function validateCertificate(
   if (publicKey !== recoveredAddress) throw new Error('Invalid certificate')
 }
 
-export function getMethodMessage(param: HTTPRequest): Buffer {
+export function getMethodMessage(param: Request): Buffer {
   const { method, url, timestamp, body } = param
   const message = Buffer.concat([
     Buffer.from(method),

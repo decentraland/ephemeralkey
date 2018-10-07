@@ -39,15 +39,10 @@ function doTest(provider: any, port: string) {
   file.end()
 
   const inviteAddress = '0x12345'
-  const inviteTokenId = '1'
   let userData: UserData
 
   it('should wrap fetch', async function() {
-    userData = await generateEphemeralKeys(
-      provider,
-      inviteAddress,
-      inviteTokenId
-    )
+    userData = await generateEphemeralKeys(provider, inviteAddress)
 
     wrappedFetch = wrapFetch(userData)(fetch)
   })

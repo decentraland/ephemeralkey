@@ -35,14 +35,9 @@ function doTest(provider: any, port: string) {
   file.end()
 
   const inviteAddress = '0x12345'
-  const inviteTokenId = '1'
   let userData: UserData
   it('should generate ephemeral keys', async function() {
-    userData = await generateEphemeralKeys(
-      provider,
-      inviteAddress,
-      inviteTokenId
-    )
+    userData = await generateEphemeralKeys(provider, inviteAddress)
     wrapAxios(userData)(axios)
   })
 
