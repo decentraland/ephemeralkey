@@ -2,7 +2,8 @@ export type Message = {
   ephemeralPublicKey: string
   network: string
   tokenAddress: string
-  nftId: string
+  now: Date
+  expiresAt: Date
 }
 
 export type Keys = {
@@ -23,9 +24,10 @@ export type UserData = Keys & {
   address: string
   message: string
   signature: string
+  expiresAt: Date
 }
 
-export type HTTPRequest = {
+export type RequestData = {
   method: string
   url: string
   body: Buffer
@@ -35,4 +37,9 @@ export type HTTPRequest = {
 export type Identity = {
   publicKey: string
   ephemeralPublicKey: string
+}
+
+export type HeaderValidatorResponse = {
+  success: boolean
+  error?: Error
 }

@@ -34,8 +34,7 @@ Lib usage for creating an ephemeral key to be used by Decentraland's apps
 ```ts
 async function generateEphemeralKeys(
   provider: any,
-  tokenAddress: string,
-  nftId: string
+  tokenAddress: string
 ): Promise<UserData>
 ```
 
@@ -45,12 +44,10 @@ async function generateEphemeralKeys(
 import { generateEphemeralKeys } from 'ephemeralkey'
 
 const decentralandInviteAddress = '0x12345'
-const inviteTokenId = '1'
 
 const userData = generateEphemeralKeys(
   web3.currentProvider,
-  decentralandInviteAddress,
-  inviteTokenId
+  decentralandInviteAddress
 )
 
 localstorage.setItem('ephemeral-data', JSON.stringify(userData))
@@ -65,6 +62,7 @@ localstorage.setItem('ephemeral-data', JSON.stringify(userData))
   address: string
   message: string
   signature: string
+  expiresAt: Date
 }
 ```
 
@@ -77,7 +75,7 @@ localstorage.setItem('ephemeral-data', JSON.stringify(userData))
 #### Definition:
 
 ```ts
-function getHeaders(userData: UserData, request: HTTPRequest): Headers
+function getHeaders(userData: UserData, request: RequestData): Headers
 ```
 
 #### Usage
@@ -85,7 +83,7 @@ function getHeaders(userData: UserData, request: HTTPRequest): Headers
 ```ts
 import { getHeaders } from 'ephemeralkey'
 
-async function fetchWithEphemeralKey(request: HTTPRequest): Promise<any> {
+async function fetchWithEphemeralKey(request: RequestData): Promise<any> {
   const userData = JSON.parse(
     localstorage.getItem('ephemeral-data', JSON.stringify(userData))
   )
@@ -126,7 +124,7 @@ const response = await fetchWithEphemeralKey({
 ### validateHeaders
 
 - Validate headers received on the request
-- Should throw if:
+- Should return error if :
 
   - The Method of the request does not match the signed request
   - The URL doesn’t match the expected URL of the server
@@ -135,16 +133,16 @@ const response = await fetchWithEphemeralKey({
   - The content-length is more than 65,536 bytes (64kb) (This is to avoid DDoS by sending a body that is too large)
   - The Certificate Signature does not correspond to the web3 address in the x-identity header
 
-- Returns true if everything is ok
+- Returns `{ success: true }` if everything is ok
 
 #### Definition:
 
 ```ts
 async function validateHeaders(
   provider: any,
-  request: HTTPRequest,
+  request: RequestData,
   headers: Headers
-): Promise<boolean>
+): Promise<HeaderValidatorResponse>
 ```
 
 #### Usage
@@ -153,35 +151,36 @@ async function validateHeaders(
 import { validateHeaders } from 'ephemeralkey'
 
 app.post('/land', function(req, res) {
-  try {
-    const validRequest = validateHeaders(
-      {
-        method: req.method,
-        url: req.protocol + '://' + req.get('host') + req.originalUrl,
-        body: Buffer.from(req.body) // req.body is illustrative, get it from request
-      },
-      req.headers
-    )
-    res.status(200)send({ message: 'everything ok' })
-  } catch (e) {
-    res.status(401)
+  const response = await validateHeaders(
+    {
+      method: req.method,
+      url: req.protocol + '://' + req.get('host') + req.originalUrl,
+      body: Buffer.from(req.body) // req.body is illustrative, get it from request
+    },
+    req.headers
+  )
+  if (response.error) {
+    res.status(401).send(error)
   }
+  res.status(200)send({ message: 'everything ok' })
 })
 ```
 
 #### Response
 
 ```ts
-true
+{
+  success: true
+}
 ```
 
 or
 
 ```ts
-Error('Invalid signature')
-Error('Invalid certificate')
-Error('Invalid timestamp')
-Error('Content size exceeded. Max length is 10 mb')
+{ success: false, error:  Error('Invalid signature') }
+{ success: false, error:  Error('Invalid certificate') }
+{ success: false, error:  Error('Content size exceeded. Max length is 10 mb') }
+{ success: false, error:  Error('Invalid timestamp') }
 ```
 
 ### decodeIdentity
@@ -268,11 +267,7 @@ import axios from 'axios'
 import { generateEphemeralKeys, wrapAxios } from 'ephemeralkey'
 
 const axiosInstance = axios.create()
-const userData = await generateEphemeralKeys(
-  provider,
-  'tokenAddress',
-  'tokenId'
-)
+const userData = await generateEphemeralKeys(provider, 'tokenAddress')
 
 wrapAxios(userData)(axiosInstance)
 
@@ -293,8 +288,7 @@ import { ephemeralkey, wrapFetch } from 'ephemeralkey'
 
 const userData = await ephemeralkey.generateEphemeralKeys(
   provider,
-  'tokenAddress',
-  'tokenId'
+  'tokenAddress'
 )
 
 const wrappedFetch = wrapFetch(userData)(window.fetch)
