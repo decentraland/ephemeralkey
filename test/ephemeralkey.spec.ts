@@ -19,14 +19,19 @@ import {
   DURATION_IN_MONTH
 } from '../src/ephemeralkey/ephemeralkey'
 
-import { UserData, Request, Headers, Identity } from '../src/ephemeralkey/types'
+import {
+  UserData,
+  RequestData,
+  Headers,
+  Identity
+} from '../src/ephemeralkey/types'
 
 const inviteAddress = '0x12345'
 const url = 'http://market.decentraland.org/api/v1/marketplace'
 const timestamp = Date.now()
 const oneMinute = 1000 * 60
 
-const request: Request = {
+const request: RequestData = {
   method: 'POST',
   body: Buffer.from(
     JSON.stringify({ param1: 'data1', param2: 'data2' }),

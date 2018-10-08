@@ -1,7 +1,7 @@
 import * as ReadableStreamClone from 'readable-stream-clone'
 
 import { streamToBuffer, isStream } from '../helpers/dataHelper'
-import { Request } from '../ephemeralkey/types'
+import { RequestData } from '../ephemeralkey/types'
 
 export async function getRequestData(url: string, method: string, data: any) {
   const timestamp = Date.now()
@@ -17,7 +17,7 @@ export async function getRequestData(url: string, method: string, data: any) {
     buffer = await streamToBuffer(stream)
   }
 
-  const httpRequest: Request = {
+  const httpRequest: RequestData = {
     method: method.toUpperCase(),
     body: Buffer.from(buffer),
     url,

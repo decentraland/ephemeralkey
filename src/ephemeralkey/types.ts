@@ -27,7 +27,7 @@ export type UserData = Keys & {
   expiresAt: Date
 }
 
-export type Request = {
+export type RequestData = {
   method: string
   url: string
   body: Buffer

@@ -75,7 +75,7 @@ localstorage.setItem('ephemeral-data', JSON.stringify(userData))
 #### Definition:
 
 ```ts
-function getHeaders(userData: UserData, request: Request): Headers
+function getHeaders(userData: UserData, request: RequestData): Headers
 ```
 
 #### Usage
@@ -83,7 +83,7 @@ function getHeaders(userData: UserData, request: Request): Headers
 ```ts
 import { getHeaders } from 'ephemeralkey'
 
-async function fetchWithEphemeralKey(request: Request): Promise<any> {
+async function fetchWithEphemeralKey(request: RequestData): Promise<any> {
   const userData = JSON.parse(
     localstorage.getItem('ephemeral-data', JSON.stringify(userData))
   )
@@ -140,7 +140,7 @@ const response = await fetchWithEphemeralKey({
 ```ts
 async function validateHeaders(
   provider: any,
-  request: Request,
+  request: RequestData,
   headers: Headers
 ): Promise<HeaderValidatorResponse>
 ```

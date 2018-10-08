@@ -6,7 +6,7 @@ import { getNetworkById } from '../helpers/networkHelper'
 import {
   Message,
   Keys,
-  Request,
+  RequestData,
   Identity,
   UserData,
   Headers,
@@ -48,7 +48,7 @@ export async function generateEphemeralKeys(
   return { address: accounts[0], signature, message, expiresAt, ...keys }
 }
 
-export function getHeaders(userData: UserData, request: Request): Headers {
+export function getHeaders(userData: UserData, request: RequestData): Headers {
   const {
     address,
     ephemeralPrivateKey,
@@ -76,7 +76,7 @@ export function getHeaders(userData: UserData, request: Request): Headers {
 
 export async function validateHeaders(
   provider: any,
-  request: Request,
+  request: RequestData,
   headers: Headers
 ): Promise<HeaderValidatorResponse> {
   try {
@@ -160,7 +160,7 @@ function validateTimestamp(timestamp: number): void {
 }
 
 function validateSignature(
-  request: Request,
+  request: RequestData,
   signature: string,
   ephemeralPublicKey: string
 ): void {
@@ -192,7 +192,7 @@ async function validateCertificate(
   if (publicKey !== recoveredAddress) throw new Error('Invalid certificate')
 }
 
-export function getMethodMessage(param: Request): Buffer {
+export function getMethodMessage(param: RequestData): Buffer {
   const { method, url, timestamp, body } = param
   const message = Buffer.concat([
     Buffer.from(method),
