@@ -2,7 +2,7 @@ import * as secp256k1 from 'secp256k1'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import { w3cwebsocket } from 'websocket'
-import { RequestManager, providers } from 'eth-connect'
+import { RequestManager, providers, utils } from 'eth-connect'
 
 import { wait } from './helpers/helpers'
 
@@ -68,7 +68,7 @@ describe('EphemeralKey', function() {
       expect(ephemeralPrivateKey.length).to.gt(0)
       expect(address).to.equal(accounts[0])
       expect(ephemeralPublicKey).to.not.equal(ephemeralPrivateKey)
-      expect(expiresAt.getTime()).to.be.gt(dateFromNow.getTime())
+      expect(expiresAt).to.be.gt(dateFromNow.getTime())
 
       const recoveredPublicKey = await requestManager.personal_ecRecover(
         message,
@@ -133,7 +133,7 @@ describe('EphemeralKey', function() {
         })
         const justAnotherHeaders: Headers = await getHeaders(userData, {
           ...request,
-          body: new Buffer('{}')
+          body: Buffer.from('{}')
         })
         const hackedRequest: Headers = await getHeaders(userData, {
           ...request,
@@ -203,7 +203,7 @@ describe('EphemeralKey', function() {
 
         response = await validateHeaders(
           provider,
-          { ...request, body: new Buffer('{}') },
+          { ...request, body: Buffer.from('{}') },
           headers
         )
 
@@ -217,14 +217,37 @@ describe('EphemeralKey', function() {
         ).to.be.equal('Invalid signature')
       })
 
+      it('should throw expired keys', async function() {
+        this.timeout(999999)
+        const headers: Headers = await getHeaders(userData, request)
+        const date = new Date()
+        date.setSeconds(date.getSeconds() - 1)
+        const certificate = await utils.toHex(`
+        OtherFields: othervalues
+        Expires: ${date.toISOString()}`)
+        let response = await validateHeaders(provider, request, {
+          ...headers,
+          'x-certificate': certificate
+        })
+
+        await expect(response.success, 'expect expired keys').to.be.equal(false)
+        await expect(
+          response.error!.message,
+          'expect expired keys'
+        ).to.be.equal('Expired keys. Please generate a new pair')
+      })
+
       it('should throw invalid certificate', async function() {
         this.timeout(999999)
         const headers: Headers = await getHeaders(userData, request)
-
+        const date = new Date()
+        date.setMonth(date.getMonth() + 1)
+        const certificate = await utils.toHex(`
+        OtherFields: othervalues
+        Expires: ${date.toISOString()}`)
         let response = await validateHeaders(provider, request, {
           ...headers,
-          'x-certificate':
-            '0x446563656e7472616c616e642041636365737320417574680a4b65793a203033316636623461346530313437356663393736323634353930626436346135333933333866323864623839633361313466343035333734323061343637656236642e0a546f6b656e3a20756e6b6e6f776e3a2f2f307831323334352f310a446174653a205765642053657020313920323031382031353a30323a313320474d542d3033303020282d3033290a457870697265733a205765642053657020313920323031382031353a30323a313320474d542d3033303020282d30332920'
+          'x-certificate': certificate
         })
 
         await expect(
