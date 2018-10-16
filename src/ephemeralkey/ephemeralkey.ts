@@ -29,7 +29,7 @@ export async function generateEphemeralKeys(
   const keys = generateKeyPair()
 
   const now = new Date()
-  const expiresAt = getExpireDate(now)
+  const expiresAt = getExpireDate()
 
   // Get message
   const message = await utils.toHex(
@@ -45,7 +45,13 @@ export async function generateEphemeralKeys(
   // Sign message
   const signature = await requestManager.personal_sign(message, accounts[0], '')
 
-  return { address: accounts[0], signature, message, expiresAt, ...keys }
+  return {
+    address: accounts[0],
+    expiresAt: expiresAt.getTime(),
+    signature,
+    message,
+    ...keys
+  }
 }
 
 export function getHeaders(userData: UserData, request: RequestData): Headers {
@@ -92,6 +98,7 @@ export async function validateHeaders(
       headers['x-signature'],
       ephemeralPublicKey
     )
+    validateExpiration(headers['x-certificate'])
     await validateCertificate(
       provider,
       publicKey,
@@ -113,7 +120,8 @@ Date: ${now.toISOString()}
 Expires: ${expiresAt.toISOString()}`
 }
 
-function getExpireDate(now: Date): Date {
+function getExpireDate(): Date {
+  const now = new Date()
   now.setMonth(now.getMonth() + DURATION_IN_MONTH)
   return now
 }
@@ -190,6 +198,17 @@ async function validateCertificate(
   )
 
   if (publicKey !== recoveredAddress) throw new Error('Invalid certificate')
+}
+
+function validateExpiration(certificate: string) {
+  try {
+    const expiresAt = utils.toAscii(certificate).split('Expires: ')[1]
+    const date = new Date(expiresAt)
+
+    if (date.getTime() - Date.now() < 0) throw new Error()
+  } catch (_) {
+    throw new Error('Expired keys. Please generate a new pair')
+  }
 }
 
 export function getMethodMessage(param: RequestData): Buffer {

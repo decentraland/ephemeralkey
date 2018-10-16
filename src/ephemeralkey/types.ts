@@ -24,7 +24,7 @@ export type UserData = Keys & {
   address: string
   message: string
   signature: string
-  expiresAt: Date
+  expiresAt: number
 }
 
 export type RequestData = {
