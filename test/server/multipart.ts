@@ -134,7 +134,7 @@ function process(part: Part): Input {
   }
 
   Object.defineProperty(input, 'data', {
-    value: new Buffer(part.part),
+    value: Buffer.from(part.part),
     writable: true,
     enumerable: true,
     configurable: true

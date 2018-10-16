@@ -62,7 +62,7 @@ localstorage.setItem('ephemeral-data', JSON.stringify(userData))
   address: string
   message: string
   signature: string
-  expiresAt: Date
+  expiresAt: number
 }
 ```
 
