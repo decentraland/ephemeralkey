@@ -40,7 +40,7 @@
     "decentraland"
   ],
   "author": "Decentraland",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/decentraland/ephemeralkey/issues"
   },
