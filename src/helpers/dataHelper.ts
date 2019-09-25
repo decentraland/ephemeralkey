@@ -23,8 +23,7 @@ export function createFormData(param) {
     if (value.toString() === '[object Blob]') {
       throw new Error('Invalid type Blob. Please convert it to Buffer')
     }
-
-    formData.append.apply(formData, [key, ...value])
+    formData.append(key, ...value)
   }
   return formData
 }
