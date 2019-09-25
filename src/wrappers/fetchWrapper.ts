@@ -32,9 +32,9 @@ async function signRequest(
   }
 
   if (isFormData) {
-    options.headers['Content-Type'] = `multipart/form-data; boundary=${
-      opt.body.boundary
-    }`
+    options.headers[
+      'Content-Type'
+    ] = `multipart/form-data; boundary=${opt.body.boundary}`
   }
 
   return [url, options]
