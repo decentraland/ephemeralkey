@@ -17,7 +17,7 @@ const request: any = {
   data: JSON.stringify({ param1: 'data1', param2: 'data2' })
 }
 
-describe('AxiosWrapper', function() {
+describe('AxiosWrapper', function () {
   testWithServer(doTest)
 })
 
@@ -36,22 +36,22 @@ function doTest(provider: any, port: string) {
 
   const inviteAddress = '0x12345'
   let userData: UserData
-  it('should generate ephemeral keys', async function() {
+  it('should generate ephemeral keys', async function () {
     userData = await generateEphemeralKeys(provider, inviteAddress)
     wrapAxios(userData)(axios)
   })
 
-  it('should get', async function() {
+  it('should get', async function () {
     const res = await axios(url, { method: 'GET' })
     expect(res.status).to.be.equal(200)
   })
 
-  it('should post json', async function() {
+  it('should post json', async function () {
     const res = await axios(url, request)
     expect(res.status).to.be.equal(200)
   })
 
-  it('should post stream', async function() {
+  it('should post stream', async function () {
     const stream = fs.createReadStream('axios.txt')
 
     const res = await axios({
@@ -63,7 +63,7 @@ function doTest(provider: any, port: string) {
     expect(res.status).to.be.equal(200)
   })
 
-  it('should post multipart', async function() {
+  it('should post multipart', async function () {
     const formdata = createFormData({
       name: 'Decentraland',
       domain: 'org',
@@ -78,7 +78,7 @@ function doTest(provider: any, port: string) {
     expect(res.status).to.be.equal(200)
   })
 
-  after(function() {
+  after(function () {
     fs.unlinkSync('axios.txt')
   })
 }
