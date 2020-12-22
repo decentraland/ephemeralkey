@@ -1,8 +1,8 @@
 # Decentraland - Ephemeralkey
 
-Lib usage for creating an ephemeral key to be used by Decentraland's apps
+A lib for creating an ephemeral key to be used by Decentraland's apps
 
-# Table of content
+# Table of contents
 
 - [Exposed API](#api)
   - [generateEphemeralKeys](#generate)
@@ -124,7 +124,7 @@ const response = await fetchWithEphemeralKey({
 ### validateHeaders
 
 - Validate headers received on the request
-- Should return error if :
+- Should return error if:
 
   - The Method of the request does not match the signed request
   - The URL doesn’t match the expected URL of the server
